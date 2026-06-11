@@ -1,0 +1,571 @@
+PS D:\paid-erp\invenza-erp> npm run electron 
+
+> invenza-saas-dev@1.0.17 electron
+> electron .
+
+
+20:40:56.301 > [Main] App starting...
+20:40:56.317 > [MAIN] App Name: invenza-saas-dev
+20:40:56.318 > [MAIN] Current UserData: C:\Users\ADMIN\AppData\Roaming\invenza-saas-dev
+20:40:56.319 > [MAIN] App Version: 1.0.17
+[DB] Connecting to:  C:\Users\ADMIN\AppData\Roaming\invenza-saas-dev\storeflow.db
+[DB] Multi-Tenant Repair: Using default company_id [2.0] for orphaned records.
+[DB] Multi-Tenant schema repair skipped for invoices: UNIQUE constraint failed: invoices.company_id, invoices.invoice_number
+[DB] Store Audit (Local Table): [
+  {
+    "id": "store-kac30tpr1",
+    "name": "showtime",
+    "company_id": "2.0"
+  },
+  {
+    "id": "store-1774965358006",
+    "name": "showtime second ",
+    "company_id": "2.0"
+  },
+  {
+    "id": "store-1774971909321",
+    "name": "test ",
+    "company_id": "2.0"
+  }
+]
+[DB] Sanitization: Repairing table [performance_reviews] (references employees_old)...
+[DB] Sanitization: Table [performance_reviews] repaired successfully.
+[DB] Sanitization: Repairing table [leave_balances] (references employees_old)...
+[DB] Sanitization: Table [leave_balances] repaired successfully.
+[DB] Initialization Diagnostics:
+[DB] UserDataPath: C:\Users\ADMIN\AppData\Roaming\invenza-saas-dev
+[DB] DB Path: C:\Users\ADMIN\AppData\Roaming\invenza-saas-dev\storeflow.db
+[DB] File exists, size: 888832
+[DB] Health Check - Stores in DB: store-1774965358006, store-1774971909321, store-kac30tpr1     
+[DB] DIAGNOSTIC: Current Accounts Schema:       
+CREATE TABLE accounts (
+                  id TEXT PRIMARY KEY,
+                  company_id TEXT,
+                  name TEXT NOT NULL,
+                  type TEXT NOT NULL,
+                  balance REAL DEFAULT 0,       
+                  store_id TEXT NOT NULL,       
+                  device_id TEXT,
+                  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+                  sync_status INTEGER DEFAULT 0,
+                  is_deleted INTEGER DEFAULT 0, 
+                  deleted_at TEXT,
+                  FOREIGN KEY (store_id) REFERENCES stores(id)
+                )
+[DB] Account migration SKIPPED: Constraint not detected.
+[DB] Migrating employees: Adding deleted_at column...
+[DB] Migrating purchases: Adding deleted_at column...
+[DB] Health Check - Employees in DB: 12
+[DB] Migration: purchases rewrite failed, likely already handled.
+[DB] Migration: quotations rewrite failed (SAFE - likely already handled).
+[DB] Safe Repair: Adding original_amount to purchases...
+[DB] Safe Repair: Adding original_currency to purchases...
+[DB] Safe Repair: Adding original_amount to quotations...
+[DB] Safe Repair: Adding original_currency to quotations...
+[DB] Safe Repair: Cleanup leftover temp table [purchases_old]...
+[DB] Safe Repair: Cleanup leftover temp table [quotations_old]...
+[DB] Health Check/Migrations COMPLETED
+[DB] Purging and re-creating quotations table for multi-tenancy...
+[DB] Migration: Added column is_deleted INTEGER DEFAULT 0 to purchases
+[DB] Migration: Added column is_deleted INTEGER DEFAULT 0 to employees
+[DB] FK Fix Required: deliveries has 1 broken references. Re-creating table...
+[DB]   - Replacing employees_old with employees
+[DB] FK Fix Completed for deliveries.
+[DB] FK Fix Required: commissions has 1 broken references. Re-creating table...
+[DB]   - Replacing employees_old with employees 
+[DB] FK Fix Completed for commissions.
+[DB] FK Fix Required: attendance has 1 broken references. Re-creating table...
+[DB]   - Replacing employees_old with employees 
+[DB] FK Fix Completed for attendance.
+[DB] FK Fix Required: leaves has 1 broken references. Re-creating table...
+[DB]   - Replacing employees_old with employees 
+[DB] FK Fix Completed for leaves.
+[DB] FK Fix Required: shifts has 1 broken references. Re-creating table...
+[DB]   - Replacing employees_old with employees
+[DB] FK Fix Completed for shifts.
+[DB] FK Fix Required: payroll has 1 broken references. Re-creating table...
+[DB]   - Replacing employees_old with employees
+[DB] FK Fix Completed for payroll.
+[DB] Hashing plain - text password for user: user-md3izr8q7
+Existing device_id: 27982966-c0c8-418c-803b-e7c3611aab4d
+[DB] Created missing employee profile emp-md3izr8q7-952 for user user-md3izr8q7
+[DB] Created missing employee profile emp-1774956250946-336 for user user-1774956250946
+[DB] Integrity Cleanup Error: FOREIGN KEY constraint failed
+[DB] Enabling Foreign Key Enforcement...        
+Current DB status - Stores: 3, Products: 17     
+[HR-DB] Initializing HR Module...
+[DB] Initializing Currency Module...
+[DB] Currency Module Initialized.
+[dotenv@17.2.4] injecting env (0) from node_modules\electron\dist\resources\.env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+[MAIN] App Name: invenza-saas-dev
+[MAIN] UserData Path: C:\Users\ADMIN\AppData\Roaming\invenza-saas-dev
+[MAIN] Available Stores in DB: [{"id":"store-kac30tpr1","name":"showtime"},{"id":"store-1774965358006","name":"showtime second "},{"id":"store-1774971909321","name":"test "}]
+[Main] IPC Handlers registered successfully     
+20:40:59.912 > [Main] App is ready, creating window
+[15116:0417/204101.297:ERROR:CONSOLE(1)] "Request Autofill.enable failed. {"code":-32601,"message":"'Autofill.enable' wasn't found"}", source: devtools://devtools/bundled/core/protocol_client/protocol_client.js (1)
+[15116:0417/204101.297:ERROR:CONSOLE(1)] "Request Autofill.setAddresses failed. {"code":-32601,"message":"'Autofill.setAddresses' wasn't found"}", source: devtools://devtools/bundled/core/protocol_client/protocol_client.js (1)
+[1888:0417/204104.258:ERROR:backend_impl.cc(989)] Critical error found -8
+[1888:0417/204104.262:ERROR:entry_impl.cc(1029)] No file for a1011d12
+[1888:0417/204104.549:ERROR:entry_impl.cc(955)] Failed to save user data
+[Updater] Dev mode ΓÇö skipping update check.
+[MAIN] Triggering initial sync...
+[Renderer] [Store] Loading from database for store: store-kac30tpr1 (company: showtime)
+IPC: getProducts for store store-kac30tpr1 (company: showtime)
+[DB] getAllProducts called: companyId=showtime, storeId=store-kac30tpr1
+getAllProducts for store store-kac30tpr1 (company: showtime): found 17 products
+IPC: getProducts returning 17 products
+20:41:12.598 > [Main] Returning app version: 1.0.17
+IPC: getDashboardMetrics for store store-kac30tpr1 (company: undefined)
+IPC: getDashboardMetrics for store store-kac30tpr1 (company: undefined)
+[SyncEngine] Applying 3 updates for stores
+[SyncEngine] Sample Row for stores: {
+  "id": "store-kac30tpr1",
+  "company_id": 2,
+  "name": "showtime",
+  "branch": "Main Branch",
+  "address": "106 ajwa road rampark ",
+  "phone": "8128260653",
+  "device_id": null,
+  "sync_status": 1,
+  "updated_at": "2026-03-31T13:54:42.110077Z",  
+  "created_at": "2026-03-30T19:44:27.552081Z"   
+}
+[SyncEngine] Applying 12 updates for users      
+[SyncEngine] Sample Row for users: {
+  "id": "user-md3izr8q7",
+  "company_id": 2,
+  "name": "showtime",
+  "email": "codecraft.burhanuddin@gmail.com",   
+  "username": "showtime",
+  "password": "pbkdf2_sha256$1200000$xzoQ5tdFiZgak82xnRkmY8$nEoD0KK2w1xaZ6fz4m8UhHkB3ctiMtnE957Lbn0KUYo=",
+  "role": "super_admin",
+  "first_name": "showtime",
+  "last_name": "",
+  "avatar": null,
+  "phone": null,
+  "bio": null,
+  "address_line1": null,
+  "address_line2": null,
+  "city": null,
+  "state": null,
+  "country": null,
+  "pincode": null,
+  "is_active": true,
+  "is_staff": true,
+  "is_driver": false,
+  "device_id": null,
+  "sync_status": 1,
+  "updated_at": "2026-04-01T13:07:56.617027+00:00",
+  "store_id": "store-kac30tpr1",
+  "store_ids": [
+    "store-kac30tpr1"
+  ]
+}
+[SyncEngine] Applying 5 updates for user_permissions
+[SyncEngine] Sample Row for user_permissions: { 
+  "id": "perm-1775750358330-747",
+  "user_id": "user-1775490820784",
+  "permissions": "{\"canSeePurchases\":false,\"canSeeBuyingPrice\":false,\"canSeeProfit\":false,\"canEditProduct\":false,\"canAddProduct\":false,\"canChangeStock\":true,\"canTransferStock\":false,\"canSeeExpectedSales\":false,\"canSeeDetailedSales\":false,\"canSeeDetailedPurchases\":false,\"canSeeSuppliers\":false,\"canSeeRevenueMetrics\":false,\"canManageEmployees\":true,\"canManagePayroll\":true,\"canManageAttendance\":true,\"canApplyDiscounts\":false,\"canAccessAllInvoices\":false,\"canManageCustomers\":false,\"canManageLedger\":false,\"canManageCommissions\":false,\"canManageCheques\":false,\"canManageTaxes\":false}",
+  "sync_status": 1,
+  "updated_at": "2026-04-10T09:34:16.961625+00:00"
+}
+[SyncEngine] Applying 6 updates for user_stores 
+[SyncEngine] Sample Row for user_stores: {      
+  "user_id": "user-md3izr8q7",
+  "store_id": "store-kac30tpr1",
+  "updated_at": "2026-04-01T13:07:56.617027+00:00",
+  "sync_status": 1
+}
+[SyncEngine] Applying 4 updates for customers
+[SyncEngine] Sample Row for customers: {        
+  "id": "id-ox1irvyan",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "name": "TEST CUSTOMER SHOWTIME ",
+  "phone": "8128260653",
+  "email": "burhanuddinmoris52@gmail.com",      
+  "area": "vadodara",
+  "credit_balance": 0,
+  "credit_limit": 0,
+  "total_purchases": 557414,
+  "source": "POS",
+  "joined_at": "2026-04-01T13:40:29.720450Z",   
+  "device_id": "72b6e2db-d94a-41d2-a77e-3f62b50e8dc3",
+  "sync_status": 1,
+  "updated_at": "2026-04-13T11:23:49.186135Z",  
+  "is_deleted": false,
+  "deleted_at": null
+}
+[SyncEngine] Applying 7 updates for accounts    
+[SyncEngine] Sample Row for accounts: {
+  "id": "acc-98auej62z",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "name": "card acc",
+  "type": "card",
+  "balance": 62200,
+  "device_id": "11a31262-b7aa-405a-b0b8-bd430e7089f0",
+  "sync_status": 1,
+  "updated_at": "2026-04-17T11:40:45.900860Z"   
+}
+[SyncEngine] Applying 17 updates for products   
+[SyncEngine] Sample Row for products: {
+  "id": "id-adt06rn71",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "name": "showtime product ",
+  "sku": "123456789",
+  "category_id": null,
+  "selling_price": 300,
+  "purchase_price": 200,
+  "quantity": 2999,
+  "unit": "set ",
+  "brand": "",
+  "barcode": null,
+  "min_stock": 2,
+  "reorder_quantity": 5,
+  "is_deleted": false,
+  "is_kit": false,
+  "is_serialized": false,
+  "tax_slab_id": null,
+  "discount_percentage": 0,
+  "price_inr": 0,
+  "price_usd": 0,
+  "device_id": "72b6e2db-d94a-41d2-a77e-3f62b50e8dc3",
+  "sync_status": 1,
+  "updated_at": "2026-04-06T19:27:36.385407Z",  
+  "deleted_at": null
+}
+[SyncEngine] Applying 11 updates for sales      
+[SyncEngine] Sample Row for sales: {
+  "id": "id-e346cdyzl",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "customer_id": "id-ox1irvyan",
+  "account_id": "acc-0713miai1",
+  "invoice_number": "INV-2604-1940",
+  "type": "cash",
+  "status": "completed",
+  "items": "[{\"productId\":\"id-adt06rn71\",\"productName\":\"showtime product \",\"quantity\":1,\"price\":300}]",
+  "subtotal": 300,
+  "discount_amount": 10,
+  "tax_amount": 0,
+  "total_amount": 290,
+  "original_amount": null,
+  "original_currency": null,
+  "profit": 90,
+  "payment_mode": "cash",
+  "source": "POS",
+  "date": "2026-04-01T13:42:43.245000+00:00",   
+  "device_id": "72b6e2db-d94a-41d2-a77e-3f62b50e8dc3",
+  "sync_status": 1,
+  "updated_at": "2026-04-01T13:42:43.375805+00:00"
+}
+[SyncEngine] Applying 3 updates for transactions
+[SyncEngine] Sample Row for transactions: {     
+  "id": "id-y2ot80xiw",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "account_id": "acc-8js1yey15",
+  "customer_id": null,
+  "type": "cash_in",
+  "amount": 1000,
+  "description": "office",
+  "date": "2026-04-10T10:36:36.268000+00:00",   
+  "device_id": "11a31262-b7aa-405a-b0b8-bd430e7089f0",
+  "sync_status": 1,
+  "updated_at": "2026-04-10T10:36:36.516187+00:00"
+}
+[SyncEngine] Applying 24 updates for stock_logs 
+[SyncEngine] Sample Row for stock_logs: {       
+  "id": "1775050963247 -n98knr34v ",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "product_id": "id-adt06rn71",
+  "quantity_change": -1,
+  "reason": "SALE",
+  "reference_id": "INV-2604-1940",
+  "device_id": "72b6e2db-d94a-41d2-a77e-3f62b50e8dc3",
+  "sync_status": 1,
+  "updated_at": "2026-04-01T13:42:43.388199+00:00",
+  "created_at": "2026-04-01T13:42:43.388216+00:00"
+}
+[SyncEngine] Applying 7 updates for categories  
+[SyncEngine] Sample Row for categories: {       
+  "id": "cat-1775129485931-dfhnh",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "name": "showtime",
+  "description": null,
+  "device_id": null,
+  "sync_status": 1,
+  "updated_at": "2026-04-02T12:28:07.526555Z",  
+  "is_deleted": false,
+  "deleted_at": null
+}
+[SyncEngine] Applying 5 updates for suppliers
+[SyncEngine] Sample Row for suppliers: {        
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-06T15:15:46.595209Z",  
+  "id": "sup-w0tx9zn2y",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "supplier_code": "supplier ",
+  "company_name": "namee",
+  "first_name": "dd",
+  "last_name": "namer",
+  "email": "dd@gmail.com",
+  "phone": "8128260653",
+  "website": null,
+  "address_line1": "uiu street ",
+  "address_line2": null,
+  "city": "vadodara ",
+  "state": "gujrat",
+  "zip_code": null,
+  "country": "",
+  "account_number": null,
+  "opening_balance": 0,
+  "payment_term_id": null,
+  "credit_limit": 0,
+  "tax_number": null,
+  "currency": "USD",
+  "current_balance": 0,
+  "internal_notes": null,
+  "comments": null,
+  "logo": null,
+  "documents": null,
+  "status": "active",
+  "rating": 5,
+  "is_preferred": false,
+  "is_blacklisted": false
+}
+[SyncEngine] Applying 1 updates for receivings  
+[SyncEngine] Sample Row for receivings: {       
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-06T15:54:27.183367Z",  
+  "id": "recv-5cek8766b",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "receiving_number": "GRN-1775490841",
+  "supplier_id": "sup-w0tx9zn2y",
+  "purchase_order_id": null,
+  "total_amount": 560,
+  "discount_total": 0,
+  "amount_paid": 0,
+  "amount_due": 0,
+  "original_amount": null,
+  "original_currency": null,
+  "account_id": null,
+  "status": "completed",
+  "notes": null,
+  "custom_fields": null,
+  "completed_at": null
+}
+[SyncEngine] Applying 2 updates for receiving_items
+[SyncEngine] Sample Row for receiving_items: {  
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-06T15:54:27.195974Z",  
+  "id": "ri-1xci23owd",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "receiving_id": "recv-5cek8766b",
+  "product_id": "manual-nqo5m6jm0",
+  "product_name": "Drill",
+  "cost": 400,
+  "quantity": 1,
+  "discount_pct": 0,
+  "total": 400,
+  "batch_number": null,
+  "expiry_date": null,
+  "serial_number": null,
+  "location": null,
+  "selling_price": null,
+  "upc": null,
+  "description": null
+}
+[SyncEngine] Applying 12 updates for employees  
+[SyncEngine] Sample Row for employees: {        
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-08T14:24:13.098129Z",  
+  "id": "emp-1775655790828",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "erp_user_id": "user-1775655790746",
+  "user_id": null,
+  "name": "Employee sh",
+  "email": "emp.showtime3@gmail.com",
+  "department": "Inventory",
+  "designation": "Inventory",
+  "salary": 30000,
+  "joining_date": null,
+  "documents": null,
+  "is_verified": false
+}
+[SyncEngine] Applying 7 updates for attendance  
+[SyncEngine] Sample Row for attendance: {       
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-08T16:26:57.878052Z",  
+  "id": "att-1775665224863",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "employee_id": "emp-1775660061345",
+  "date": "2026-04-08",
+  "check_in": "16:20:24",
+  "check_out": "16:26:57",
+  "status": "late"
+}
+[SyncEngine] Applying 2 updates for leaves      
+[SyncEngine] Sample Row for leaves: {
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-09T14:00:46.634290Z",  
+  "id": "lv-1775735379467",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "employee_id": "emp-1775663135461",
+  "type": "casual",
+  "start_date": "2026-04-10",
+  "end_date": "2026-04-11",
+  "reason": null,
+  "status": "approved"
+}
+[SyncEngine] Applying 11 updates for payroll
+[SyncEngine] Sample Row for payroll: {
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-09T14:42:17.594396Z",  
+  "id": "pay-r4k24pgi7",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "employee_id": "emp-1775663135461",
+  "month": 4,
+  "year": 2026,
+  "basic_salary": 10000,
+  "allowances": 0,
+  "deductions": 0,
+  "net_salary": 10000,
+  "status": "paid",
+  "payment_date": null,
+  "paid_at": null
+}
+[SyncEngine] Applying 3 updates for quotations  
+[SyncEngine] Sample Row for quotations: {       
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-07T14:42:45.157424Z",  
+  "id": "id-56w7fnv3g",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "customer_id": "id-ox1irvyan",
+  "quotation_number": "QTN-2604-6596",
+  "items": "[{\"productId\":\"manual-m2ipww1px\",\"productName\":\"Hammer claw\",\"quantity\":4,\"price\":29.99},{\"productId\":\"manual-o9n4bnryg\",\"productName\":\"circular saw\",\"quantity\":4,\"price\":240},{\"productId\":\"manual-nqo5m6jm0\",\"productName\":\"Drill\",\"quantity\":4,\"price\":600}]",
+  "total_amount": 3479.96,
+  "customer_name": "TEST CUSTOMER SHOWTIME ",   
+  "customer_phone": null,
+  "date": "2026-04-07T14:24:11.182000Z",        
+  "expiry_date": null,
+  "status": "pending",
+  "notes": null,
+  "original_amount": null,
+  "original_currency": null
+}
+[SyncEngine] Applying 6 updates for purchases   
+[SyncEngine] Sample Row for purchases: {        
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-07T13:41:06.600683Z",  
+  "id": "id-qlxztm3hm",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "supplier_id": null,
+  "account_id": "acc-0713miai1",
+  "invoice_number": "PUR-2604-9881",
+  "type": "cash",
+  "items": "[{\"productId\":\"manual-m2ipww1px\",\"productName\":\"Hammer claw\",\"quantity\":1,\"price\":19.99},{\"productId\":\"manual-o9n4bnryg\",\"productName\":\"circular saw\",\"quantity\":2,\"price\":160},{\"productId\":\"manual-nqo5m6jm0\",\"productName\":\"Drill\",\"quantity\":2,\"price\":400}]",
+  "total_amount": 1139.99,
+  "original_amount": null,
+  "original_currency": null,
+  "date": "2026-04-07T13:11:40.314000Z"
+}
+[SyncEngine] Applying 6 updates for cheques     
+[SyncEngine] Sample Row for cheques: {
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-11T09:31:53.481350Z",  
+  "id": "chq-zh6b35cn5",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "party_type": "customer",
+  "party_id": "",
+  "party_name": "Doseal",
+  "cheque_number": "12345678",
+  "bank_name": "HDFC BANK",
+  "amount": 100000,
+  "issue_date": "2026-04-11",
+  "clearing_date": null,
+  "status": "bounced",
+  "notes": ""
+}
+[SyncEngine] Applying 6 updates for loyalty_points
+[SyncEngine] Sample Row for loyalty_points: {   
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-13T09:41:24.226214Z",  
+  "id": "id-wddzgbc31 -lp",
+  "company_id": 2,
+  "store_id": null,
+  "customer_id": "id-ox1irvyan",
+  "points": 1584,
+  "reason": "Sale INV-2604-0117 ",
+  "sale_id": "id-wddzgbc31",
+  "created_at": "2026-04-13T09:41:24.226248Z"   
+}
+[SyncEngine] Applying 2 updates for shifts      
+[SyncEngine] Sample Row for shifts: {
+  "device_id": null,
+  "sync_status": 1,
+  "is_deleted": false,
+  "deleted_at": null,
+  "updated_at": "2026-04-09T11:47:43.578795Z",  
+  "id": "shift-1775735263466",
+  "company_id": 2,
+  "store_id": "store-kac30tpr1",
+  "employee_id": "emp-1775658309313",
+  "start_time": "2026-04-09T09:00:00Z",
+  "end_time": "2026-04-09T18:00:00Z",
+  "type": "Custom Shift",
+  "status": "assigned"
+}
+[Renderer] [Store] Loading from database for store: store-kac30tpr1 (company: showtime)
+IPC: getProducts for store store-kac30tpr1 (company: showtime)
+[DB] getAllProducts called: companyId=showtime, storeId=store-kac30tpr1
+getAllProducts for store store-kac30tpr1 (company: showtime): found 17 products
+IPC: getProducts returning 17 products
+IPC: getDashboardMetrics for store store-kac30tpr1 (company: undefined)

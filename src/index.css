@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* iOS Black and White Light Theme */
+    /* Base Colors - White & Gray */
+    --background: 0 0% 98%;
+    /* iOS very light gray background */
+    --foreground: 225 72% 25%;
+    /* Deep Dark Blue text */
+
+    --card: 0 0% 100%;
+    /* Pure White cards */
+    --card-foreground: 225 72% 25%;
+    /* Dark blue text on cards */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 72% 25%;
+
+    /* Brand Colors - Blue */
+    --primary: 220 71% 44%;
+    /* Brand Blue for primary elements */
+    --primary-foreground: 0 0% 100%;
+    /* Pure White text on primary */
+
+    --secondary: 220 20% 96%;
+    /* Light Blueish Gray */
+    --secondary-foreground: 225 72% 25%;
+
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 20% 40%;
+    /* Gray-blue text */
+
+    --accent: 220 20% 96%;
+    --accent-foreground: 225 72% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    /* iOS Red */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 70% 40%;
+    /* iOS Green */
+    --success-foreground: 0 0% 100%;
+
+    --warning: 40 96% 53%;
+    /* iOS Orange/Yellow */
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 15% 90%;
+    /* Light blue-gray border */
+    --input: 220 15% 90%;
+    --ring: 220 71% 44%;
+    /* Brand blue focus ring */
+
+    --radius: 0.75rem;
+    /* iOS rounded corners */
+
+    /* Sidebar Tokens - Light Theme */
+    --sidebar-background: 0 0% 100%;
+    /* White Sidebar */
+    --sidebar-foreground: 225 40% 30%;
+    /* Dark Blue-Gray text */
+    --sidebar-primary: 220 71% 44%;
+    /* Brand Blue Active */
+    --sidebar-primary-foreground: 0 0% 100%;
+    /* White Text on Active */
+    --sidebar-accent: 220 20% 96%;
+    /* Light Blue-Gray hover */
+    --sidebar-accent-foreground: 225 72% 25%;
+    /* Dark Blue Text on Hover */
+    --sidebar-border: 220 15% 90%;
+    /* Light blue-gray border */
+    --sidebar-ring: 220 71% 44%;
+
+    /* ERP Specific Tokens */
+    --erp-nav-height: 3.5rem;
+    --erp-bottom-nav-height: 4.5rem;
+    /* Slightly taller for iOS style */
+  }
+
+  .dark {
+    /* Keep dark mode as is, or switch to an iOS dark mode later if requested. User asked for Light Theme. */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    /* ... keeping default dark variables from previous setup ... */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    /* Use iOS system fonts */
+  }
+
+  /* Global Page Entry */
+  main {
+    @apply animate-in fade-in duration-300;
+  }
+}
+
+@layer components {
+
+  /* No Animations - Instant Response (Keeping as requested previously) */
+  .erp-animate-in {
+    /* No animation */
+  }
+
+  .hover-scale {
+    /* No scaling */
+  }
+
+  /* iOS Card */
+  .erp-card {
+    @apply bg-card border-none rounded-2xl p-5 shadow-[0_2px_10px_#0000000f];
+  }
+
+  .erp-stat-card {
+    @apply bg-card border border-gray-100 rounded-2xl p-5 transition-shadow shadow-[0_2px_8px_#0000000a] hover:-translate-y-1 hover:shadow-[0_4px_16px_#00000014];
+  }
+
+  /* Compact Lists */
+  .erp-list-item {
+    @apply flex items-center justify-between p-3 border-b border-gray-100 last:border-b-0 active:bg-gray-100 transition-colors cursor-pointer text-sm;
+  }
+
+  /* Clean Header */
+  .erp-page-header {
+    @apply sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3 md:px-6 flex items-center justify-between;
+  }
+
+  .erp-page-content {
+    @apply p-4 md:p-6 pb-28 lg:pb-6 max-w-full mx-auto container scroll-smooth;
+  }
+
+  /* Bottom Nav */
+  .erp-bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-gray-200 flex items-center justify-around h-[4.5rem] lg:hidden z-50 pb-safe;
+    /* pb-safe for iPhone bottom bar spacing */
+  }
+
+  .erp-nav-item {
+    @apply flex flex-col items-center justify-center gap-1 px-3 py-2 text-slate-500 transition-colors rounded-none active:text-primary;
+  }
+
+  .erp-nav-item.active {
+    @apply text-primary font-semibold;
+  }
+
+  /* Inputs - iOS style */
+  .erp-input {
+    @apply w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition-all text-base md:text-sm;
+  }
+
+  /* Buttons - Clean iOS Style */
+  .erp-button {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-[15px] transition-all focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98];
+  }
+
+  .erp-button-primary {
+    @apply bg-primary text-white hover:opacity-90 border-none shadow-sm;
+  }
+
+  .erp-button-secondary {
+    @apply bg-gray-100 text-foreground border-none hover:bg-gray-200;
+  }
+
+  .erp-button-accent {
+    @apply bg-blue-500 text-white hover:bg-blue-600 border-none shadow-sm;
+  }
+
+  .erp-button-ghost {
+    @apply bg-transparent text-foreground hover:bg-gray-100;
+  }
+
+  .erp-fab {
+    @apply fixed right-6 bottom-24 lg:bottom-8 w-14 h-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center hover:opacity-90 z-40 border-none;
+  }
+
+  /* Badges - Rounded Pills */
+  .erp-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full border border-transparent text-[11px] font-semibold;
+  }
+
+  .erp-badge-warning {
+    @apply bg-orange-100 text-orange-800;
+  }
+
+  .erp-badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .erp-badge-destructive {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .erp-badge-admin {
+    @apply bg-gray-200 text-gray-800;
+  }
+
+  /* Table - Clean */
+  .erp-table {
+    @apply w-full text-sm border-collapse;
+  }
+
+  .erp-table th {
+    @apply text-left p-3.5 bg-gray-50/50 font-semibold text-gray-500 border-b border-gray-200 text-[13px];
+  }
+
+  .erp-table td {
+    @apply p-3.5 border-b border-gray-100 text-foreground;
+  }
+
+  .erp-table tr:hover {
+    @apply bg-gray-50/80;
+  }
+
+  .erp-empty-state {
+    @apply flex flex-col items-center justify-center py-12 text-center border border-gray-100 rounded-2xl bg-gray-50;
+  }
+
+  /* Utilities for iOS safe areas */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

@@ -1,0 +1,13 @@
+addStore
+addGiftCard
+addTransaction
+addActivityLog
+addQuotation
+addSupplier
+addSupplierTransaction
+addSupplierCustomField
+addPaymentTerm
+addSupplierDocument
+addPayroll
+addEmployee
+addCheque
