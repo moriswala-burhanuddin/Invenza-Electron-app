@@ -4,6 +4,7 @@ import { useERPStore } from '@/lib/store-data';
 import { FileText, ArrowLeft, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn, formatCurrency } from '@/lib/utils';
+import { isElectron } from '@/lib/electron-helper';
 
 export default function TransactionDetails() {
     const { id } = useParams();
@@ -27,6 +28,47 @@ export default function TransactionDetails() {
     }
 
     const account = accounts.find(a => a.id === transaction.accountId);
+
+    const handleDownloadReceipt = async () => {
+        const html = `
+        <html>
+          <head>
+            <style>
+              body { font-family: monospace; padding: 20px; font-size: 14px; max-width: 300px; margin: 0 auto; }
+              .header { text-align: center; margin-bottom: 20px; font-weight: bold; font-size: 18px; }
+              .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+              .bold { font-weight: bold; }
+              .divider { border-bottom: 1px dashed #000; margin: 10px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="header">TRANSACTION RECEIPT</div>
+            <div class="row"><span>ID:</span><span>${transaction.id.substring(0,8)}</span></div>
+            <div class="row"><span>Date:</span><span>${new Date(transaction.date).toLocaleString()}</span></div>
+            <div class="row"><span>Type:</span><span>${transaction.type.toUpperCase()}</span></div>
+            <div class="divider"></div>
+            <div class="row"><span>Account:</span><span>${account?.name || 'N/A'}</span></div>
+            <div class="row"><span>Desc:</span><span>${transaction.description || 'N/A'}</span></div>
+            ${transaction.customerName ? `<div class="row"><span>Customer:</span><span>${transaction.customerName}</span></div>` : ''}
+            <div class="divider"></div>
+            <div class="row bold" style="font-size:16px;"><span>AMOUNT:</span><span>${formatCurrency(transaction.amount)}</span></div>
+            <div class="divider"></div>
+            <div style="text-align:center; margin-top: 20px;">Record Generated Successfully</div>
+          </body>
+        </html>
+        `;
+
+        if (isElectron() && window.electronAPI?.printReceipt) {
+            await window.electronAPI.printReceipt(html);
+        } else {
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.print();
+            }
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#F2F2F7] pb-32">
@@ -95,7 +137,10 @@ export default function TransactionDetails() {
                         >
                             Back to Transactions
                         </Button>
-                        <Button className="h-14 bg-primary text-white rounded-2xl px-10 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20">
+                        <Button 
+                            onClick={handleDownloadReceipt}
+                            className="h-14 bg-primary text-white rounded-2xl px-10 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20"
+                        >
                             Download Receipt
                         </Button>
                     </div>

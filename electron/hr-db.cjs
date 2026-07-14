@@ -376,7 +376,7 @@ module.exports = (db, toCamelCase, deviceId) => {
           existingUser = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
         }
         if (!existingUser && data.email) {
-          existingUser = db.prepare("SELECT * FROM users WHERE email = ? AND is_deleted = 0").get(data.email);
+          existingUser = db.prepare("SELECT * FROM users WHERE email = ?").get(data.email);
           if (existingUser) userId = existingUser.id;
         }
 

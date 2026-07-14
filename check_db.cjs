@@ -1,10 +1,8 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
-// In db.cjs, userDataPath is app.getPath('userData'). 
-// For typical electron apps on Windows, this is %APPDATA%\<App Name>
-// The app name seems to be 'invenza-erp' or similar based on earlier paths.
 const possiblePaths = [
     path.join(os.homedir(), 'AppData', 'Roaming', 'invenza-erp', 'storeflow.db'),
     path.join(os.homedir(), 'AppData', 'Roaming', 'StoreFlow ERP', 'storeflow.db'),
@@ -13,7 +11,7 @@ const possiblePaths = [
 
 let dbPath;
 for (const p of possiblePaths) {
-    if (require('fs').existsSync(p)) {
+    if (fs.existsSync(p)) {
         dbPath = p;
         break;
     }
@@ -27,16 +25,9 @@ if (!dbPath) {
 console.log("Using DB at:", dbPath);
 const db = new Database(dbPath);
 
-console.log("=== STORES ===");
-console.log(db.prepare("SELECT id, company_id, name FROM stores").all());
+console.log("\n=== PRODUCTS SCHEMA ===");
+const schema = db.prepare("PRAGMA table_info(products)").all();
+console.log(schema.map(c => c.name));
 
-console.log("\n=== USERS SUMMARY ===");
-console.log(db.prepare("SELECT id, company_id, store_id, email, role FROM users LIMIT 5").all());
-
-console.log("\n=== PRODUCTS SUMMARY ===");
-const count = db.prepare("SELECT COUNT(*) as c FROM products").get().c;
-console.log(`Total Products: ${count}`);
-if (count > 0) {
-    console.log("First 10 Products:");
-    console.log(db.prepare("SELECT id, name, company_id, store_id, is_deleted FROM products LIMIT 10").all());
-}
+console.log("\n=== RECENT PRODUCTS ===");
+console.log(db.prepare("SELECT id, name, description FROM products ORDER BY updated_at DESC LIMIT 5").all());

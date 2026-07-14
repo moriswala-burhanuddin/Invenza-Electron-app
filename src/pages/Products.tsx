@@ -159,9 +159,15 @@ export default function Products() {
         failed: summary.failed_rows
       });
 
-      toast.success('Import Complete', {
-        description: `Processed ${summary.total_rows} rows.`
-      });
+      if (summary.failed_rows > 0) {
+        toast.error('Import Completed with Errors', {
+          description: `Created: ${summary.created_products}, Failed: ${summary.failed_rows}. First error: ${summary.errors?.[0]?.reason || 'Unknown'}`
+        });
+      } else {
+        toast.success('Import Complete', {
+          description: `Successfully processed ${summary.total_rows} rows.`
+        });
+      }
     } catch (error) {
       toast.error('Upload Failed', { description: (error as Error).message });
     } finally {

@@ -15,6 +15,8 @@ export interface UgandaComplianceData {
     subtotal: number;
     taxAmount: number;
     totalAmount: number;
+    taxName?: string;
+    taxPercentage?: number;
     customerName?: string;
     customerPhone?: string;
     supplierName?: string;
@@ -185,9 +187,9 @@ export function generateUgandaComplianceHtml(data: UgandaComplianceData, store: 
             </thead>
             <tbody>
                 <tr>
-                    <td>A: VAT-Standard (18%)</td>
-                    <td class="text-right">${(data.totalAmount / 1.18).toFixed(4)}</td>
-                    <td class="text-right">${(data.totalAmount - (data.totalAmount / 1.18)).toFixed(4)}</td>
+                    <td>${data.taxName ? `${data.taxName} (${data.taxPercentage || 0}%)` : 'Tax (Variable/Included)'}</td>
+                    <td class="text-right">${data.subtotal.toFixed(4)}</td>
+                    <td class="text-right">${data.taxAmount.toFixed(4)}</td>
                     <td class="text-right">${data.totalAmount.toLocaleString()}</td>
                 </tr>
             </tbody>
@@ -197,8 +199,8 @@ export function generateUgandaComplianceHtml(data: UgandaComplianceData, store: 
         <div class="section-title">${showTax ? 'Section E' : 'Section D'}: Summary</div>
         <table>
             ${showTax ? `
-            <tr><td width="30%">Net Amount:</td><td class="text-right">${(data.totalAmount / 1.18).toFixed(4)}</td></tr>
-            <tr><td>Tax Amount:</td><td class="text-right">${(data.totalAmount - (data.totalAmount / 1.18)).toFixed(4)}</td></tr>
+            <tr><td width="30%">Net Amount:</td><td class="text-right">${data.subtotal.toFixed(4)}</td></tr>
+            <tr><td>Tax Amount:</td><td class="text-right">${data.taxAmount.toFixed(4)}</td></tr>
             ` : ''}
             <tr><td width="30%">${showTax ? 'Gross Amount' : 'Total Amount'}:</td><td class="text-right">${data.totalAmount.toLocaleString()}</td></tr>
             <tr><td>Amount in words:</td><td>${amountInWords}</td></tr>

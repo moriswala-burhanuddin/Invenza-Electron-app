@@ -246,7 +246,7 @@ const Cheques = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Party Name</label>
                                     <input type="text" required value={newCheque.partyName} onChange={e => setNewCheque({ ...newCheque, partyName: e.target.value })} placeholder="e.g. Acme Corp or John Doe" className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 text-[11px] font-black uppercase focus:ring-2 focus:ring-primary placeholder:text-slate-200 outline-none" />
                                 </div>
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cheque Direction</label>
                                         <select value={newCheque.partyType} onChange={e => setNewCheque({ ...newCheque, partyType: e.target.value as any })} className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 text-[11px] font-black uppercase focus:ring-2 focus:ring-primary outline-none">

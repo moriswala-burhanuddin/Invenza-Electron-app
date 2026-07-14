@@ -13,6 +13,7 @@ export interface InventoryRow {
     unit?: string;
     minStock?: number;
     reorderQuantity?: number;
+    description?: string;
 }
 
 export interface InventoryValidationResult {
@@ -71,6 +72,7 @@ export const validateInventoryRow = (row: Record<string, unknown>, rowIndex: num
     const unit = row.unit || row.Unit || row['Unit of Measure'] ? String(row.unit || row.Unit || row['Unit of Measure']) : undefined;
     const minStock = Number(row.minStock || row.MinStock || row['Low Stock Alert'] || 0);
     const reorderQuantity = Number(row.reorderQuantity || row.ReorderQuantity || row['Reorder Amount'] || 0);
+    const description = row.description || row.Description ? String(row.description || row.Description) : undefined;
 
     if ((row.price !== undefined || row.Price !== undefined) && (isNaN(price) || price < 0)) {
         errors.push('Invalid price (must be non-negative number)');
@@ -101,7 +103,8 @@ export const validateInventoryRow = (row: Record<string, unknown>, rowIndex: num
             brand,
             unit,
             minStock: isNaN(minStock) ? 0 : minStock,
-            reorderQuantity: isNaN(reorderQuantity) ? 0 : reorderQuantity
+            reorderQuantity: isNaN(reorderQuantity) ? 0 : reorderQuantity,
+            description
         },
         errors: [],
         isValid: true

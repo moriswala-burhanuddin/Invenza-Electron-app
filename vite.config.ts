@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {

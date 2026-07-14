@@ -250,4 +250,5 @@ export const createPurchasesSlice: StoreSlice<PurchasesState> = (set, get) => ({
   },
 
   getStorePurchases: () => get().purchases.filter(p => p.storeId === get().activeStoreId),
+  getStoreSuppliers: () => get().suppliers,
 });

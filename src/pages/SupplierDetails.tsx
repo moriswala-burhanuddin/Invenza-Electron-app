@@ -39,7 +39,7 @@ export default function SupplierDetails() {
     const activeTab = searchParams.get('tab') || 'profile';
 
     const {
-        suppliers, purchases, paymentTerms,
+        suppliers, purchases, purchaseOrders, paymentTerms,
         getSupplierLedger, addSupplierTransaction,
         activeStoreId, deleteSupplier
     } = useERPStore();
@@ -52,9 +52,9 @@ export default function SupplierDetails() {
     const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
     const [txSearch, setTxSearch] = useState('');
 
-    const linkedPurchases = purchases.filter(p =>
-        p.supplier?.toLowerCase() === supplier?.companyName?.toLowerCase() ||
-        p.supplier === supplier?.id
+    const linkedOrders = purchaseOrders.filter(po =>
+        po.supplier?.toLowerCase() === supplier?.companyName?.toLowerCase() ||
+        po.supplierId === supplier?.id
     );
 
     useEffect(() => {
@@ -405,22 +405,22 @@ export default function SupplierDetails() {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Purchase Orders</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{linkedPurchases.length} Order Records Linked</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{linkedOrders.length} Order Records Linked</p>
                             </div>
                         </div>
 
-                        {linkedPurchases.length > 0 ? (
+                        {linkedOrders.length > 0 ? (
                             <div className="space-y-4">
-                                {linkedPurchases.map(p => (
+                                {linkedOrders.map(p => (
                                     <div key={p.id} className="flex items-center justify-between p-8 bg-slate-50 rounded-[2.5rem] group hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-slate-100">
                                         <div className="flex items-center gap-8">
                                             <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-amber-400 transition-all">
                                                 <ReceiptText className="w-6 h-6" />
                                             </div>
                                             <div>
-                                                <h4 className="font-black text-sm uppercase tracking-tight font-mono mb-1">{p.invoiceNumber}</h4>
+                                                <h4 className="font-black text-sm uppercase tracking-tight font-mono mb-1">{p.poNumber || 'N/A'}</h4>
                                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                                    {new Date(p.date).toLocaleDateString()} • {Array.isArray(p.items) ? `${p.items.length} Production Units` : 'Bulk Order'}
+                                                    {new Date(p.date).toLocaleDateString()} • {p.status || 'Pending'}
                                                 </p>
                                             </div>
                                         </div>

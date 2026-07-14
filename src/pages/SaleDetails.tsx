@@ -15,7 +15,7 @@ import { TaxInclusionDialog } from '@/components/compliance/TaxInclusionDialog';
 export default function SaleDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { getStoreSales, getStoreCustomers, deleteSale } = useERPStore();
+    const { getStoreSales, getStoreCustomers, deleteSale, taxSlabs } = useERPStore();
     const config = useStoreConfig();
     const printRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +52,15 @@ export default function SaleDetails() {
     };
 
     const getComplianceData = (): UgandaComplianceData => {
+        const taxableAmount = sale.subtotal - (sale.discountAmount || 0);
+        let taxPercentage = 0;
+        let taxName = 'Tax';
+        if (sale.taxAmount && taxableAmount > 0) {
+            taxPercentage = Math.round((sale.taxAmount / taxableAmount) * 100);
+            const matchedSlab = taxSlabs?.find(s => s.percentage === taxPercentage);
+            if (matchedSlab) taxName = matchedSlab.name;
+        }
+
         return {
             invoiceNumber: sale.invoiceNumber,
             date: sale.date,
@@ -63,9 +72,11 @@ export default function SaleDetails() {
                 taxCategory: 'A',
                 unitMeasure: 'PCE-Piece'
             })),
-            subtotal: sale.totalAmount / 1.18, // Estimated net if not explicitly stored
-            taxAmount: sale.totalAmount - (sale.totalAmount / 1.18),
+            subtotal: sale.subtotal,
+            taxAmount: sale.taxAmount || 0,
             totalAmount: sale.totalAmount,
+            taxName,
+            taxPercentage,
             customerName: customer?.name,
             customerPhone: customer?.phone,
             paymentMode: sale.paymentMode || 'Cash',
@@ -283,7 +294,7 @@ export default function SaleDetails() {
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
-                                    <span className="text-sm font-black text-slate-900">{formatCurrency(sale.totalAmount)}</span>
+                                    <span className="text-sm font-black text-slate-900">{formatCurrency(sale.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Discount</span>

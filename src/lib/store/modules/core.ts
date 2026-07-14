@@ -124,6 +124,9 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
         if (finalStoreId && finalStoreId !== 'store-1') {
             localStorage.setItem('invenza_active_store', finalStoreId);
         }
+        
+        await get().loadFromDatabase();
+        
         return { success: true };
       }
 
@@ -146,13 +149,22 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
       }
 
       if (isValid) {
+        const lastStore = localStorage.getItem('invenza_active_store');
+        const finalStoreId = lastStore || localUser.storeId || 'store-1';
+
         set({
           currentUser: localUser,
           isAuthenticated: true,
           accessToken: 'mock-local-token',
           refreshToken: 'mock-local-refresh',
-          activeStoreId: localUser.storeId || 'store-1'
+          activeStoreId: finalStoreId
         });
+        
+        if (finalStoreId && finalStoreId !== 'store-1') {
+            localStorage.setItem('invenza_active_store', finalStoreId);
+        }
+        await get().loadFromDatabase();
+        
         return { success: true };
       }
     }
@@ -165,8 +177,7 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
       console.log('[Auth] Logging out. Clearing local tenant data...');
       await window.electronAPI.clearTenantData();
     }
-    localStorage.removeItem('invenza_active_store');
-    set({ currentUser: null, isAuthenticated: false, accessToken: null, refreshToken: null, activeStoreId: 'store-1' });
+    set({ currentUser: null, isAuthenticated: false, accessToken: null, refreshToken: null });
   },
 
   setActiveStore: async (storeId) => {
@@ -190,6 +201,9 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
                   || (s as unknown as Record<string, string>).company_id;
         if (cid) { companyId = cid; break; }
       }
+    }
+    if (!companyId) {
+      companyId = 1;
     }
     
     const newStore = {

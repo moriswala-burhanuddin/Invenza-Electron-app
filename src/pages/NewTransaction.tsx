@@ -12,12 +12,14 @@ export default function NewTransaction() {
   
   const accounts = getStoreAccounts();
   const customers = getStoreCustomers();
+  const expenseCategories = useERPStore(state => state.expenseCategories);
 
   const [type, setType] = useState<Transaction['type']>('cash_in');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [accountId, setAccountId] = useState(accounts[0]?.id || '');
   const [customerId, setCustomerId] = useState('');
+  const [expenseCategoryId, setExpenseCategoryId] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +37,7 @@ export default function NewTransaction() {
       accountId,
       customerId: type === 'cash_in' && customerId ? customerId : undefined,
       customerName: type === 'cash_in' && customer ? customer.name : undefined,
+      expenseCategoryId: type === 'expense' ? expenseCategoryId : undefined,
       storeId: activeStoreId,
       date: new Date().toISOString()
     });
@@ -57,7 +60,7 @@ export default function NewTransaction() {
         {/* Type Selection */}
         <div className="erp-card">
           <label className="block text-sm font-medium text-foreground mb-3">Transaction Type</label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {types.map((t) => (
               <button
                 key={t.id}
@@ -116,6 +119,25 @@ export default function NewTransaction() {
                 <option key={c.id} value={c.id}>
                   {c.name} - {formatCurrency(c.creditBalance)} credit
                 </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Expense Category (Only for Expense) */}
+        {type === 'expense' && (
+          <div className="erp-card">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Expense Category
+            </label>
+            <select
+              value={expenseCategoryId}
+              onChange={(e) => setExpenseCategoryId(e.target.value)}
+              className="erp-input"
+            >
+              <option value="">No category (general)</option>
+              {expenseCategories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </div>

@@ -1,0 +1,4 @@
+Barcode,Name,Category,Brand,Price,Purchase Price,Stock,Unit,MinStock,ReorderQuantity,Description
+INV-001,Premium Widget,Hardware,Acme,49.99,25.50,50,Pcs,5,15,Heavy duty widget for industrial use.
+INV-002,Standard Widget,Hardware,Acme,19.99,10.00,100,Pcs,10,20,Standard widget for everyday use.
+INV-003,Pro Tool Kit,Tools,BuildCo,149.99,85.00,20,Box,2,5,Professional 50-piece tool kit.

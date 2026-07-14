@@ -197,6 +197,16 @@ export default function ProductDetails() {
                                     );
                                 })}
                             </div>
+
+                            {/* Description block moved out of the flex map for better layout */}
+                            {product.description && (
+                                <div className="mt-8 pt-8 border-t border-slate-100">
+                                    <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Description</span>
+                                    <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                                        {product.description}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-primary rounded-[2.5rem] p-10 text-white shadow-2xl shadow-black/20">

@@ -24,7 +24,7 @@ export const dbAdapter = {
         return null
     },
 
-    getDashboardMetrics: (storeId: string, companyId: string): Promise<DashboardMetrics | null> => isElectron() ? window.electronAPI.getDashboardMetrics(storeId, companyId) : Promise.resolve(null),
+    getDashboardMetrics: (storeId: string, companyId: string, dateRange?: string): Promise<DashboardMetrics | null> => isElectron() ? window.electronAPI.getDashboardMetrics(storeId, companyId, dateRange) : Promise.resolve(null),
     getLowStockNotifications: (storeId: string, companyId: string): Promise<unknown[]> => isElectron() ? window.electronAPI.getLowStockNotifications(storeId, companyId) : Promise.resolve([]),
 
     async getProductByBarcode(barcode: string, storeId: string) {
@@ -299,6 +299,7 @@ export const dbAdapter = {
     addExpenseCategory: (cat: ExpenseCategory) => isElectron() ? window.electronAPI.addExpenseCategory(cat) : Promise.resolve(null),
     getTaxSlabs: (companyId: string): Promise<TaxSlab[] | null> => isElectron() ? window.electronAPI.getTaxSlabs(companyId) : Promise.resolve(null),
     addTaxSlab: (slab: TaxSlab) => isElectron() ? window.electronAPI.addTaxSlab(slab) : Promise.resolve(null),
+    deleteTaxSlab: (id: string) => isElectron() ? window.electronAPI.deleteTaxSlab(id) : Promise.resolve(null),
     getCommissions: (storeId: string, companyId: string): Promise<Commission[] | null> => isElectron() ? window.electronAPI.getCommissions(storeId, companyId) : Promise.resolve(null),
     getLoyaltyPoints: (customerId: string, companyId: string): Promise<LoyaltyPoint[] | null> => isElectron() ? window.electronAPI.getLoyaltyPoints(customerId, companyId) : Promise.resolve(null),
     generateBarcode: (sku: string): Promise<string | null> => isElectron() ? window.electronAPI.generateBarcode(sku) : Promise.resolve(null),

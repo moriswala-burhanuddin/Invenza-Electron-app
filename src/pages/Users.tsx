@@ -41,7 +41,7 @@ export default function Users() {
     <div className="min-h-screen bg-[#F2F2F7] pb-40">
       {/* Superior Header */}
       <div className="bg-white border-b border-slate-100 z-50 sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:h-24 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
           <div className="flex items-center gap-6">
             <button onClick={() => window.history.back()} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all text-slate-400">
               <ArrowLeft className="w-5 h-5" />
@@ -138,11 +138,11 @@ export default function Users() {
 
                   <div className="space-y-6 mb-10">
                     <div className={cn(
-                      "flex items-center justify-between text-[11px] font-black uppercase tracking-widest p-4 rounded-2xl",
+                      "flex items-center justify-between text-[11px] font-black uppercase tracking-widest p-4 rounded-2xl min-w-0",
                       isSuperAdmin ? "bg-white/5 text-indigo-300" : "bg-slate-50/50 text-slate-400"
                     )}>
-                      <span className="flex items-center gap-3"><Key className="w-4 h-4 text-indigo-500" /> USERNAME</span>
-                      <span className={cn("font-mono", isSuperAdmin ? "text-white" : "text-slate-900")}>@{u.username}</span>
+                      <span className="flex items-center gap-3 shrink-0"><Key className="w-4 h-4 text-indigo-500" /> USERNAME</span>
+                      <span className={cn("font-mono truncate ml-4", isSuperAdmin ? "text-white" : "text-slate-900")} title={`@${u.username}`}>@{u.username}</span>
                     </div>
                     <div className={cn(
                       "flex items-center justify-between text-[11px] font-black uppercase tracking-widest p-4 rounded-2xl",

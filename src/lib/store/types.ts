@@ -66,6 +66,7 @@ export interface Category {
 export interface Product {
   id: string;
   name: string;
+  description?: string;
   sku: string;
   categoryId?: string; // Change from category: string
   categoryName?: string; // For display convenience
@@ -351,6 +352,7 @@ export interface Transaction {
   accountId: string;
   date: string;
   referenceId?: string;
+  expenseCategoryId?: string;
   originalAmount?: number;
   originalCurrency?: string;
   deviceId?: string;
@@ -361,8 +363,11 @@ export interface Purchase {
   id: string;
   invoiceNumber: string;
   supplier: string;
+  supplierId?: string;
   type: 'cash' | 'credit';
   items: SaleItem[];
+  subtotal?: number;
+  taxAmount?: number;
   totalAmount: number;
   storeId: string;
   accountId: string;
@@ -555,6 +560,8 @@ export interface Invoice {
 
 export interface TaxSlab {
   id: string;
+  companyId?: string;
+  storeId?: string;
   name: string;
   percentage: number;
 }
@@ -870,6 +877,7 @@ export interface PurchasesState {
   
   // Getters
   getStorePurchases: () => Purchase[];
+  getStoreSuppliers: () => Supplier[];
 }
 
 export interface FinanceState {
@@ -898,6 +906,7 @@ export interface FinanceState {
   deleteCheque: (id: string) => Promise<void>;
   addExpenseCategory: (cat: Omit<ExpenseCategory, 'id'>) => Promise<void>;
   addTaxSlab: (slab: Omit<TaxSlab, 'id'>) => Promise<void>;
+  deleteTaxSlab: (id: string) => Promise<void>;
   
   // Getters
   getStoreTransactions: () => Transaction[];

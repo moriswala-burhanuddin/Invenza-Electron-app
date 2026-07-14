@@ -12,13 +12,10 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const ROLE_OPTIONS = [
-    { value: 'employee', label: 'Employee' },
     { value: 'hr_manager', label: 'HR Manager' },
     { value: 'sales_manager', label: 'Sales Manager' },
     { value: 'inventory_manager', label: 'Inventory Manager' },
     { value: 'accountant', label: 'Accountant' },
-    { value: 'staff', label: 'Staff' },
-    { value: 'admin', label: 'Admin' },
 ];
 
 const DEPARTMENT_OPTIONS = [
@@ -178,8 +175,8 @@ const Employees = () => {
                                         ADD EMPLOYEE
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-2xl rounded-[3rem] p-10 border-none shadow-2xl">
-                                    <DialogHeader className="mb-6">
+                                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-[3rem] p-6 sm:p-10 border-none shadow-2xl">
+                                    <DialogHeader className="mb-6 shrink-0">
                                         <DialogTitle className="text-xl font-black uppercase tracking-tight">Add New Employee</DialogTitle>
                                         <p className="text-xs text-slate-400 font-medium mt-1">
                                             A login account will be created for this employee automatically.
@@ -193,7 +190,7 @@ const Employees = () => {
                                                 <Lock className="w-4 h-4 text-slate-400" />
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Login Details</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-2 col-span-2">
                                                     <Label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Full Name *</Label>
                                                     <Input
@@ -249,11 +246,11 @@ const Employees = () => {
 
                                         {/* Job Details Section */}
                                         <div className="bg-slate-50 rounded-2xl p-6 space-y-4">
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-4">
                                                 <Briefcase className="w-4 h-4 text-slate-400" />
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Job Details</p>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <Label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Department *</Label>
                                                     <Select value={formData.department} onValueChange={val => set('department', val)}>

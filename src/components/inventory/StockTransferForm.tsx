@@ -55,16 +55,16 @@ export function StockTransferForm({ onSuccess, initialProductId }: StockTransfer
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 pt-4 text-white">
+        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
             <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 ml-1">Select Product Asset</Label>
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Select Product Asset</Label>
                 <Select value={productId} onValueChange={setProductId}>
-                    <SelectTrigger className="h-16 bg-white/10 border-white/10 rounded-2xl text-lg font-black focus:ring-[#2156C1]">
+                    <SelectTrigger className="h-16 bg-slate-50 border-slate-200 rounded-2xl text-lg font-black text-slate-900 focus:ring-[#2156C1]">
                         <SelectValue placeholder="Select inventory item..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#12286D] border-white/10 text-white">
+                    <SelectContent className="bg-white border-slate-200 text-slate-900">
                         {products.map((p) => (
-                            <SelectItem key={p.id} value={p.id} className="focus:bg-[#2156C1] focus:text-white">
+                            <SelectItem key={p.id} value={p.id} className="focus:bg-[#2156C1] focus:text-white font-bold">
                                 {p.name} ({p.sku})
                             </SelectItem>
                         ))}
@@ -74,14 +74,14 @@ export function StockTransferForm({ onSuccess, initialProductId }: StockTransfer
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 ml-1">Source Node</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Source Node</Label>
                     <Select value={fromStoreId} onValueChange={setFromStoreId}>
-                        <SelectTrigger className="h-14 bg-white/10 border-white/10 rounded-2xl focus:ring-[#2156C1]">
+                        <SelectTrigger className="h-14 bg-slate-50 border-slate-200 rounded-2xl text-slate-900 focus:ring-[#2156C1] font-bold">
                             <SelectValue placeholder="Source" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#12286D] border-white/10 text-white">
+                        <SelectContent className="bg-white border-slate-200 text-slate-900">
                             {stores.map((s) => (
-                                <SelectItem key={s.id} value={s.id} className="focus:bg-[#2156C1] focus:text-white">
+                                <SelectItem key={s.id} value={s.id} className="focus:bg-[#2156C1] focus:text-white font-bold">
                                     {s.name} - {s.branch}
                                 </SelectItem>
                             ))}
@@ -90,14 +90,14 @@ export function StockTransferForm({ onSuccess, initialProductId }: StockTransfer
                 </div>
 
                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 ml-1">Destination Node</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Destination Node</Label>
                     <Select value={toStoreId} onValueChange={setToStoreId}>
-                        <SelectTrigger className="h-14 bg-white/10 border-white/10 rounded-2xl focus:ring-[#2156C1]">
+                        <SelectTrigger className="h-14 bg-slate-50 border-slate-200 rounded-2xl text-slate-900 focus:ring-[#2156C1] font-bold">
                             <SelectValue placeholder="Destination" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#12286D] border-white/10 text-white">
+                        <SelectContent className="bg-white border-slate-200 text-slate-900">
                             {stores.map((s) => (
-                                <SelectItem key={s.id} value={s.id} className="focus:bg-[#2156C1] focus:text-white">
+                                <SelectItem key={s.id} value={s.id} className="focus:bg-[#2156C1] focus:text-white font-bold">
                                     {s.name} - {s.branch}
                                 </SelectItem>
                             ))}
@@ -107,14 +107,14 @@ export function StockTransferForm({ onSuccess, initialProductId }: StockTransfer
             </div>
 
             <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 ml-1">Transfer Quantity</Label>
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Transfer Quantity</Label>
                 <Input
                     type="number"
                     step="any"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="AMOUNT TO DEPLOY..."
-                    className="h-16 bg-white/10 border-white/10 rounded-2xl text-lg font-black placeholder:text-white/20 focus:ring-[#2156C1] uppercase tracking-widest"
+                    className="h-16 bg-slate-50 border-slate-200 rounded-2xl text-lg text-slate-900 font-black placeholder:text-slate-300 focus:ring-[#2156C1] uppercase tracking-widest"
                 />
             </div>
 

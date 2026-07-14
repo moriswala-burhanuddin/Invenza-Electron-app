@@ -77,8 +77,8 @@ export default function Stores() {
         toast.success("New store added.");
       }
       handleCloseForm();
-    } catch (error) {
-      toast.error("Failed to save store. Please try again.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save store. Please try again.");
     }
   };
 

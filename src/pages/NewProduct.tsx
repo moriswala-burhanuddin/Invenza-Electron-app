@@ -37,6 +37,7 @@ export default function NewProduct() {
 
   const [formData, setFormData] = useState({
     name: '',
+    description: '',
     sku: '',
     categoryId: '',
     categoryName: '',
@@ -75,6 +76,7 @@ export default function NewProduct() {
 
         setFormData({
           name: product.name,
+          description: product.description || '',
           sku: product.sku || '',
           categoryId: finalCategoryId || '',
           categoryName: product.categoryName || '', // Keep categoryName for display
@@ -103,6 +105,7 @@ export default function NewProduct() {
       const product = location.state.cloneData as import('@/lib/store-data').Product;
       setFormData({
         name: `${product.name} (CLONE)`,
+        description: product.description || '',
         sku: `${product.sku}-COPY`,
         categoryId: product.categoryId || '',
         categoryName: product.categoryName || '',
@@ -150,7 +153,7 @@ export default function NewProduct() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -206,6 +209,7 @@ export default function NewProduct() {
 
       const productData = {
         name: formData.name,
+        description: formData.description || '',
         sku: formData.sku.toUpperCase(),
         categoryId: finalCategoryId,
         categoryName: finalCategoryName,
@@ -302,6 +306,19 @@ export default function NewProduct() {
                   disabled={isEditMode && !canEditProduct}
                   className="w-full bg-slate-50 border-none rounded-[1.5rem] py-5 px-6 font-bold text-slate-900 focus:ring-2 focus:ring-primary transition-all placeholder:text-slate-300 disabled:opacity-50"
                   placeholder="Enter product title..."
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  disabled={isEditMode && !canEditProduct}
+                  rows={3}
+                  className="w-full bg-slate-50 border-none rounded-[1.5rem] py-5 px-6 font-bold text-slate-900 focus:ring-2 focus:ring-primary transition-all placeholder:text-slate-300 disabled:opacity-50 resize-none"
+                  placeholder="Optional details, dimensions, specs..."
                 />
               </div>
               <div className="space-y-3">

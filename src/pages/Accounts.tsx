@@ -262,8 +262,8 @@ export default function Accounts() {
 
       {/* Add Account Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-500 animate-in fade-in">
-          <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 shadow-2xl shadow-black/30 relative animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md transition-all duration-500 animate-in fade-in">
+          <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar rounded-[3.5rem] p-8 md:p-12 shadow-2xl shadow-black/30 relative animate-in zoom-in-95 duration-300">
             <button
               onClick={() => setIsAddModalOpen(false)}
               className="absolute top-8 right-8 p-3 hover:bg-slate-50 rounded-2xl transition-all"
@@ -290,7 +290,7 @@ export default function Accounts() {
 
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block text-center">Account Type</label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(['cash', 'card', 'wallet', 'bank', 'savings', 'credit'] as const).map(type => (
                       <button
                         key={type}
@@ -396,7 +396,7 @@ export default function Accounts() {
 
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block text-center">Account Type</label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(['cash', 'card', 'wallet', 'bank', 'savings', 'credit'] as const).map(type => (
                       <button
                         key={type}

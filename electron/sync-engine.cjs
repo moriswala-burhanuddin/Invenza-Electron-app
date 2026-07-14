@@ -219,8 +219,7 @@ const syncEngine = {
                         ON CONFLICT(${conflictTarget}) DO UPDATE SET 
                             ${updateSets},
                             sync_status = 1
-                        WHERE 1=1
-                        ${hasUpdatedAt ? ` AND (excluded.updated_at > ${table}.updated_at OR ${table}.sync_status = 1)` : ''}
+                        WHERE ${table}.sync_status = 1
                     `;
                     const stmt = db.prepare(sql);
 

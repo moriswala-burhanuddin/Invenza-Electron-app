@@ -86,6 +86,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     addExpenseCategory: (cat) => ipcRenderer.invoke('db:addExpenseCategory', cat),
     getTaxSlabs: (companyId) => ipcRenderer.invoke('db:getTaxSlabs', companyId),
     addTaxSlab: (slab) => ipcRenderer.invoke('db:addTaxSlab', slab),
+    deleteTaxSlab: (id) => ipcRenderer.invoke('db:deleteTaxSlab', id),
     getCommissions: (storeId, companyId) => ipcRenderer.invoke('db:getCommissions', storeId, companyId),
     getLoyaltyPoints: (customerId, companyId) => ipcRenderer.invoke('db:getLoyaltyPoints', customerId, companyId),
     generateBarcode: (sku) => ipcRenderer.invoke('db:generateBarcode', sku),
@@ -198,7 +199,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateDelivery: (id, updates) => ipcRenderer.invoke('db:updateDelivery', id, updates),
 
     // Dashboard
-    getDashboardMetrics: (storeId, companyId) => ipcRenderer.invoke('db:getDashboardMetrics', storeId, companyId),
+    getDashboardMetrics: (storeId, companyId, dateRange) => ipcRenderer.invoke('db:getDashboardMetrics', storeId, companyId, dateRange),
     getLowStockNotifications: (storeId, companyId) => ipcRenderer.invoke('db:getLowStockNotifications', storeId, companyId),
 
     // System Features

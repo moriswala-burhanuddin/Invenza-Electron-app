@@ -56,28 +56,21 @@ const DEMO_METRICS: DashboardMetrics = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { getStoreCustomers, getActiveStore, checkPermission } = useERPStore();
+  const { getStoreCustomers, getActiveStore, checkPermission, currentUser } = useERPStore();
   const [dateRange, setDateRange] = useState('today');
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [onlineStats, setOnlineStats] = useState<any>(null);
   const activeStore = getActiveStore();
 
   useEffect(() => {
-    if (isElectron() && activeStore) {
-      dbAdapter.getDashboardMetrics(activeStore.id).then(setMetrics);
+    const companyId = currentUser?.companyId || (activeStore as any)?.company_id || (activeStore as any)?.companyId || 'showtime';
+    if (isElectron() && activeStore && companyId) {
+      dbAdapter.getDashboardMetrics(activeStore.id, companyId, dateRange).then(setMetrics);
     } else if (!isElectron()) {
       // Provide high-quality mock data for the web demo
       setMetrics(DEMO_METRICS);
-      setOnlineStats({ revenue: 4250000, orders: 12 });
     }
-    
-    if (activeStore) {
-      // Still attempt to fetch live store stats if URL is configured
-      eleganceApi.getStoreSummary().then(setOnlineStats).catch(() => {
-        if (!isElectron()) setOnlineStats({ revenue: 4250000, orders: 12 });
-      });
-    }
-  }, [activeStore]);
+  }, [activeStore, currentUser, dateRange]);
 
   const canSeeRevenue = checkPermission('canSeeRevenueMetrics');
   const canSeeProfit = checkPermission('canSeeProfit');
@@ -90,14 +83,6 @@ export default function Dashboard() {
       icon: Wallet,
       color: 'bg-indigo-600',
       trend: 'Physical',
-      isCurrency: true
-    },
-    {
-      label: 'Online Revenue',
-      value: onlineStats ? onlineStats.revenue : (metrics?.onlineRevenue || 0),
-      icon: ShoppingCart,
-      color: 'bg-amber-500',
-      trend: onlineStats ? `${onlineStats.orders} Orders` : 'Website',
       isCurrency: true
     }] : []),
     ...(canSeeProfit ? [{
@@ -161,7 +146,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Widgets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 mb-10">
           {stats.map((stat, i) => (
             <div key={stat.label} className="group bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
               <div className={cn("absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-[0.03] group-hover:scale-150 transition-transform duration-700", stat.color)} />

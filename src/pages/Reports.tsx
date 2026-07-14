@@ -51,7 +51,7 @@ export default function Reports() {
   const [reportData, setReportData] = useState<Record<string, unknown>[]>([]);
   const store = getActiveStore();
   const config = useStoreConfig();
-  const companyId = currentUser?.companyId;
+  const companyId = currentUser?.companyId || store?.companyId || 'showtime';
 
   const categories: { id: ReportCategory; label: string; icon: ElementType, accent: string }[] = [
     { id: 'sales', label: 'Sales', icon: BarChart2, accent: 'bg-indigo-50 text-indigo-600' },
@@ -64,7 +64,7 @@ export default function Reports() {
   const filteredReports = REPORT_TYPES.filter(r => r.category === selectedCategory);
 
   const fetchPreview = useCallback(async () => {
-    if (!activeStoreId || !companyId) return;
+    if (!activeStoreId) return;
     setLoading(true);
     try {
       console.log(`[Diagnostic] Fetching report: ${selectedReport} for Store: ${activeStoreId}, Company: ${companyId}`);

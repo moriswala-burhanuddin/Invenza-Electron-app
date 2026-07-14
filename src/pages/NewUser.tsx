@@ -141,13 +141,6 @@ export default function NewUser() {
   };
 
   const roles = [
-    { id: 'user', label: 'Store User', category: 'Basic' },
-    { id: 'staff', label: 'Store Staff', category: 'Basic' },
-    { id: 'employee', label: 'General Employee', category: 'Basic' },
-    { id: 'hr_manager', label: 'HR Manager', category: 'Management' },
-    { id: 'sales_manager', label: 'Sales Manager', category: 'Management' },
-    { id: 'inventory_manager', label: 'Inventory Manager', category: 'Management' },
-    { id: 'accountant', label: 'Accountant', category: 'Management' },
     { id: 'admin', label: 'Store Admin', category: 'Admin' },
     { id: 'super_admin', label: 'Super Admin', category: 'Admin' },
   ];

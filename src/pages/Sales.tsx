@@ -245,7 +245,7 @@ export default function Sales() {
 
             {/* Intelligence Widgets */}
             {canSeeRevenueMetrics && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
                     <div className="bg-primary rounded-[2rem] p-8 text-white shadow-xl shadow-black/10">
                         <div className="flex justify-between mb-6">
                             <Wallet className="w-6 h-6 text-slate-500" />

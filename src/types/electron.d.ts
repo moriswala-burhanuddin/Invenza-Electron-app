@@ -27,7 +27,7 @@ export interface HiringCandidate {
 export interface ElectronAPI {
     // Products
     getProducts: (storeId: string, companyId: string) => Promise<Product[]>;
-    getDashboardMetrics: (storeId: string, companyId: string) => Promise<DashboardMetrics>;
+    getDashboardMetrics: (storeId: string, companyId: string, dateRange?: string) => Promise<DashboardMetrics>;
     getLowStockNotifications: (storeId: string, companyId: string) => Promise<unknown[]>;
     getProductByBarcode: (barcode: string, storeId: string) => Promise<Product | null>;
     addProduct: (product: Product) => Promise<{ success: boolean; id?: string }>;
@@ -118,6 +118,7 @@ export interface ElectronAPI {
     addExpenseCategory: (cat: ExpenseCategory) => Promise<{ success: boolean }>;
     getTaxSlabs: (companyId: string) => Promise<TaxSlab[]>;
     addTaxSlab: (slab: TaxSlab) => Promise<{ success: boolean }>;
+    deleteTaxSlab: (id: string) => Promise<{ success: boolean }>;
     getCommissions: (storeId: string, companyId: string) => Promise<Commission[]>;
     getLoyaltyPoints: (customerId: string, companyId: string) => Promise<LoyaltyPoint[]>;
     generateBarcode: (sku: string) => Promise<string>;

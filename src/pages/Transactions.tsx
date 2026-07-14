@@ -10,19 +10,21 @@ const fmt = (amount: number) => formatCurrency(amount);
 
 export default function Transactions() {
   const navigate = useNavigate();
-  const { getStoreTransactions, getStoreAccounts, checkPermission } = useERPStore();
+  const { getStoreTransactions, getStoreAccounts, getStoreCustomers, checkPermission } = useERPStore();
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const transactions = getStoreTransactions();
   const accounts = getStoreAccounts();
+  const customers = getStoreCustomers();
 
   const canManageLedger = checkPermission('canManageLedger');
 
   const filteredTransactions = transactions.filter(t => {
     const matchesType = filterType === 'all' || t.type === filterType;
+    const customer = customers.find(c => c.id === t.customerId);
     const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.customerName || '').toLowerCase().includes(searchQuery.toLowerCase());
+      (customer?.name || t.customerName || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -117,8 +119,8 @@ export default function Transactions() {
             </div>
 
             {/* Stream Controls */}
-            <div className="bg-white p-6 rounded-[3rem] border border-white shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-              <div className="flex gap-3 overflow-x-auto p-2 scrollbar-none shrink-0">
+            <div className="bg-white p-4 rounded-[2.5rem] border border-white shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-4 w-full">
+              <div className="flex gap-2 overflow-x-auto p-2 scrollbar-none w-full xl:w-auto xl:flex-1">
                 {['all', 'cash_in', 'cash_out', 'expense', 'sale_return'].map((type) => (
                   <button
                     key={type}
@@ -135,8 +137,8 @@ export default function Transactions() {
                 ))}
               </div>
 
-              <div className="relative w-full lg:w-[400px] shrink-0 group">
-                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+              <div className="relative w-full xl:w-[350px] shrink-0 group px-2 xl:px-0">
+                <div className="absolute inset-y-0 left-6 xl:left-4 flex items-center pointer-events-none">
                   <Search className="w-5 h-5 text-slate-300 group-focus-within:text-foreground transition-colors" />
                 </div>
                 <input
@@ -185,9 +187,9 @@ export default function Transactions() {
                             <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                               <span className="text-slate-300">ACCOUNT:</span> {account?.name || 'N/A'}
                             </div>
-                            {t.customerName && (
+                            {(t.customerId || t.customerName) && (
                               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <span className="text-slate-300">CUSTOMER:</span> {t.customerName}
+                                <span className="text-slate-300">CUSTOMER:</span> {customers.find(c => c.id === t.customerId)?.name || t.customerName}
                               </div>
                             )}
                           </div>

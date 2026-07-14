@@ -16,7 +16,7 @@ export default function PurchaseDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const config = useStoreConfig();
-    const { getStorePurchases, getStoreAccounts, deletePurchase, suppliers, checkPermission } = useERPStore();
+    const { getStorePurchases, getStoreAccounts, deletePurchase, suppliers, checkPermission, taxSlabs } = useERPStore();
 
     const purchases = getStorePurchases();
     const accounts = getStoreAccounts();
@@ -71,6 +71,15 @@ export default function PurchaseDetails() {
     };
 
     const getComplianceData = (): UgandaComplianceData => {
+        const taxableAmount = (purchase.subtotal || 0); // Assuming no discount on purchases for now
+        let taxPercentage = 0;
+        let taxName = 'Tax';
+        if (purchase.taxAmount && taxableAmount > 0) {
+            taxPercentage = Math.round((purchase.taxAmount / taxableAmount) * 100);
+            const matchedSlab = taxSlabs?.find(s => s.percentage === taxPercentage);
+            if (matchedSlab) taxName = matchedSlab.name;
+        }
+
         return {
             invoiceNumber: purchase.invoiceNumber,
             date: purchase.date,
@@ -82,9 +91,11 @@ export default function PurchaseDetails() {
                 taxCategory: 'A',
                 unitMeasure: 'PCE-Piece'
             })),
-            subtotal: purchase.totalAmount / 1.18,
-            taxAmount: purchase.totalAmount - (purchase.totalAmount / 1.18),
+            subtotal: purchase.subtotal || 0,
+            taxAmount: purchase.taxAmount || 0,
             totalAmount: purchase.totalAmount,
+            taxName,
+            taxPercentage,
             supplierName: purchase.supplier,
             supplierPhone: supplier?.phone,
             paymentMode: 'Cash', // Default for purchase
@@ -258,11 +269,11 @@ export default function PurchaseDetails() {
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center text-slate-400 text-xs">
                                     <span className="uppercase tracking-widest">Subtotal</span>
-                                    <span>{formatCurrency(purchase.totalAmount)}</span>
+                                    <span>{formatCurrency(purchase.subtotal || purchase.totalAmount)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-slate-400 text-xs">
-                                    <span className="uppercase tracking-widest">Tax (0%)</span>
-                                    <span>{formatCurrency(0)}</span>
+                                    <span className="uppercase tracking-widest">Tax</span>
+                                    <span>{formatCurrency(purchase.taxAmount || 0)}</span>
                                 </div>
                                 <hr className="border-white/10" />
                                 <div className="flex justify-between items-end">

@@ -1,0 +1,3 @@
+Name,Barcode,Price,Purchase Price,Stock,Category,Brand,Unit,Low Stock Alert,Reorder Amount,Description
+Test Product 1,TEST123456789,15.99,10,100,Electronics,Sony,Pcs,10,20,A premium test electronic device.
+Premium Widget,WIDGET9876543,49.99,25.5,50,Hardware,Acme,Box,5,15,Heavy duty widget for industrial use.

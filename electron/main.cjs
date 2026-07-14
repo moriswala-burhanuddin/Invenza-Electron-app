@@ -18,9 +18,9 @@ ipcMain.handle('system:getVersion', () => {
     return version;
 });
 
-ipcMain.handle('db:getDashboardMetrics', async (event, storeId, companyId) => {
+ipcMain.handle('db:getDashboardMetrics', async (event, storeId, companyId, dateRange) => {
     console.log(`IPC: getDashboardMetrics for store ${storeId} (company: ${companyId})`)
-    return dbHelpers.getDashboardMetrics(companyId, storeId)
+    return dbHelpers.getDashboardMetrics(companyId, storeId, dateRange)
 });
 
 ipcMain.handle('db:getLowStockNotifications', async (event, storeId, companyId) => {
@@ -548,6 +548,12 @@ ipcMain.handle('db:addTaxSlab', async (event, slab) => {
     return result
 })
 
+ipcMain.handle('db:deleteTaxSlab', async (event, id) => {
+    const result = dbHelpers.deleteTaxSlab(id)
+    if (mainWindow) mainWindow.webContents.send('sync:trigger')
+    return result
+})
+
 ipcMain.handle('db:getCommissions', async (event, storeId, companyId) => {
     return dbHelpers.getCommissions(storeId) // commissions might need companyId later
 })
@@ -642,7 +648,7 @@ ipcMain.handle('db:processExcelUpload', async (event, rows, storeId) => {
                     // AUTO-CREATE CATEGORY
                     console.log(`[Excel] Category "${categoryName}" not found. Creating...`);
                     const newCatId = `cat-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-                    db.prepare('INSERT INTO categories (id, name, store_id, updated_at, sync_status) VALUES (?, ?, ?, datetime("now"), 0)').run(
+                    db.prepare("INSERT INTO categories (id, name, store_id, updated_at, sync_status) VALUES (?, ?, ?, datetime('now'), 0)").run(
                         newCatId, categoryName, storeId
                     );
                     cat = { id: newCatId, name: categoryName };
@@ -654,6 +660,7 @@ ipcMain.handle('db:processExcelUpload', async (event, rows, storeId) => {
 
             const productData = {
                 name: row.name,
+                description: row.description || row.Description || '',
                 barcode: row.barcode,
                 sku: row.barcode, 
                 sellingPrice: Number(row.price || 0),

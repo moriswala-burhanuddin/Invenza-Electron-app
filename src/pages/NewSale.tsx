@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { isElectron } from '@/lib/electron-helper';
 import { useERPStore, Product, ItemKit } from '@/lib/store-data';
-import { Plus, Minus, Trash2, X, Search, ShoppingBag, UserPlus, Check, ChevronsUpDown, MoreVertical, Pause, ClipboardList, Truck, Mail, Barcode, ArrowLeft, CreditCard, Wallet, Tag, ShieldCheck, Zap, AlertTriangle, TrendingUp, Activity, Smartphone, Monitor, DollarSign } from 'lucide-react';
+import { Plus, Minus, Trash2, X, Search, ShoppingBag, UserPlus, Check, ChevronsUpDown, MoreVertical, Pause, ClipboardList, Truck, Mail, Barcode, ArrowLeft, CreditCard, Wallet, Tag, ShieldCheck, Zap, AlertTriangle, TrendingUp, Activity, Smartphone, Monitor, DollarSign, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Drawer } from 'vaul';
 import { toast } from 'sonner';
@@ -62,7 +62,7 @@ export default function NewSale() {
   const itemKits = getStoreItemKits();
   const users = getStoreUsers();
 
-  const { baseCurrency } = useStoreConfig();
+  const { baseCurrency, flatDiscountAlsoDiscountsTax } = useStoreConfig();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [saleType, setSaleType] = useState<'cash' | 'credit' | 'retail'>('cash');
   const [paymentMode, setPaymentMode] = useState<'cash' | 'card' | 'wallet'>('cash');
@@ -89,6 +89,10 @@ export default function NewSale() {
   const [inputDialogLabel, setInputDialogLabel] = useState('');
   const [inputDialogOnConfirm, setInputDialogOnConfirm] = useState<(val: string) => void>(() => (val: string) => { });
 
+  const [newGiftCardOpen, setNewGiftCardOpen] = useState(false);
+  const [newCardNumber, setNewCardNumber] = useState('');
+  const [newCardValue, setNewCardValue] = useState('');
+
   const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
   const [showWorkOrderDialog, setShowWorkOrderDialog] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("");
@@ -111,9 +115,9 @@ export default function NewSale() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const itemsDiscountTotal = cart.reduce((sum, item) => sum + (item.discount * item.quantity), 0);
   const selectedTaxSlab = taxSlabs.find(s => s.id === selectedTaxSlabId);
-  const taxableAmount = Math.max(0, subtotal - itemsDiscountTotal - billDiscount);
+  const taxableAmount = Math.max(0, subtotal - itemsDiscountTotal - (flatDiscountAlsoDiscountsTax ? billDiscount : 0));
   const taxAmount = selectedTaxSlab ? (taxableAmount * selectedTaxSlab.percentage) / 100 : 0;
-  const totalAmount = taxableAmount + taxAmount;
+  const totalAmount = Math.max(0, subtotal - itemsDiscountTotal - billDiscount) + taxAmount;
   const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
   const remainingBalance = totalAmount - totalPaid;
 
@@ -269,8 +273,8 @@ export default function NewSale() {
       if (finalPayments.length === 0) {
         finalPayments = [{ mode: 'cash', amount: totalAmount, accountId: accountId }];
       } else if (remainingBalance > 0.01) {
-        toast.error(`Payment Shortfall: ${formatCurrency(remainingBalance)}`);
-        return;
+        finalPayments.push({ mode: 'cash', amount: remainingBalance, accountId: accountId });
+        toast.info(`Auto-filled shortfall of ${formatCurrency(remainingBalance)} with Cash`);
       }
     }
 
@@ -436,12 +440,12 @@ export default function NewSale() {
         </div>
       </div>
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex flex-col xl:flex-row overflow-hidden">
         {/* Selection Area */}
-        <div className="flex-1 overflow-y-auto p-8 relative">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 relative">
           <div className="max-w-4xl mx-auto space-y-10">
             {/* 1. Sale Details */}
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8">
               <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
                 <div className="flex items-center gap-3 mb-8">
                   <Zap className="w-5 h-5 text-indigo-600" />
@@ -700,7 +704,7 @@ export default function NewSale() {
         </div>
 
         {/* Payment Section Sidebar */}
-        <div className="w-[450px] bg-white border-l border-slate-100 flex flex-col p-10 shadow-2xl shadow-black/5 z-40 relative">
+        <div className="w-full xl:w-[450px] bg-white border-t xl:border-t-0 xl:border-l border-slate-100 flex flex-col p-6 md:p-10 shadow-2xl shadow-black/5 z-40 relative">
           <div className="flex items-center justify-between mb-12">
             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Payment Section</h3>
             <div className="p-3 bg-emerald-50 rounded-2xl">
@@ -709,6 +713,51 @@ export default function NewSale() {
           </div>
 
           <div className="flex-1 space-y-10 overflow-y-auto pr-2 custom-scrollbar">
+            {giftCards.some(gc => gc.isActive) && (
+              <div className="mb-6 p-4 bg-purple-50 rounded-2xl border border-purple-100 flex items-center justify-between">
+                <div>
+                  <h4 className="text-[10px] font-black text-purple-600 uppercase tracking-widest">
+                    {customerId && giftCards.some(gc => gc.isActive && gc.customerId === customerId) 
+                      ? "Customer Gift Card" 
+                      : "Gift Cards Available"}
+                  </h4>
+                  <p className="text-[9px] font-black text-purple-400 mt-1 uppercase">
+                    {customerId && giftCards.some(gc => gc.isActive && gc.customerId === customerId) 
+                      ? "Customer has active cards" 
+                      : "Apply a gift card to this sale"}
+                  </p>
+                </div>
+                <Button 
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    let cardId = undefined;
+                    let amountToApply = remainingBalance;
+
+                    if (customerId) {
+                      const card = giftCards.find(gc => gc.isActive && gc.customerId === customerId);
+                      if (card) {
+                        cardId = card.id;
+                        amountToApply = Math.min(card.balance, remainingBalance);
+                      }
+                    }
+                    
+                    if (remainingBalance > 0.01) {
+                        const newPayments = [...payments, { mode: 'gift_card' as const, amount: amountToApply, giftCardId: cardId }];
+                        // Auto-add cash for shortfall
+                        if (amountToApply < remainingBalance) {
+                            newPayments.push({ mode: 'cash' as const, amount: remainingBalance - amountToApply, accountId: accountId });
+                        }
+                        setPayments(newPayments);
+                    }
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-8 px-4 text-[9px] font-black uppercase tracking-widest transition-all"
+                >
+                  Redeem Card
+                </Button>
+              </div>
+            )}
+
             {/* 3. Payment Selection */}
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -736,7 +785,7 @@ export default function NewSale() {
                         <option value="cash">CASH</option>
                         <option value="card">CARD</option>
                         <option value="upi">UPI/DIGITAL</option>
-                        <option value="gift_card">GIFT VOUCHER</option>
+                        <option value="gift_card">GIFT CARD</option>
                         {saleType === 'credit' && <option value="store_credit">STORE CREDIT</option>}
                       </select>
                     </div>
@@ -757,14 +806,30 @@ export default function NewSale() {
 
                   <div className="flex items-center justify-between">
                     {p.mode === 'gift_card' ? (
-                      <select
-                        value={p.giftCardId}
-                        onChange={(e) => { const n = [...payments]; n[idx].giftCardId = e.target.value; setPayments(n); }}
-                        className="flex-1 bg-white border-none rounded-xl h-10 px-4 text-[9px] font-black uppercase focus:ring-1 focus:ring-primary"
-                      >
-                        <option value="">SELECT VOUCHER</option>
-                        {giftCards.filter(gc => gc.isActive).map(gc => <option key={gc.id} value={gc.id}>{gc.cardNumber} (Bal: {formatCurrency(gc.balance)})</option>)}
-                      </select>
+                      <div className="flex gap-2 w-full">
+                        <select
+                          value={p.giftCardId}
+                          onChange={(e) => { const n = [...payments]; n[idx].giftCardId = e.target.value; setPayments(n); }}
+                          className="flex-1 bg-white border-none rounded-xl h-10 px-4 text-[9px] font-black uppercase focus:ring-1 focus:ring-primary"
+                        >
+                          <option value="">SELECT GIFT CARD</option>
+                          {giftCards
+                            .filter(gc => gc.isActive)
+                            .sort((a, b) => (b.customerId === customerId ? 1 : 0) - (a.customerId === customerId ? 1 : 0))
+                            .map(gc => (
+                              <option key={gc.id} value={gc.id}>
+                                {gc.cardNumber} (Bal: {formatCurrency(gc.balance)}) {gc.customerId === customerId ? '⭐' : ''}
+                              </option>
+                          ))}
+                        </select>
+                        <Button
+                          variant="ghost" 
+                          onClick={() => setNewGiftCardOpen(true)} 
+                          className="bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl px-4 h-10 font-black text-[9px] uppercase tracking-widest shrink-0"
+                        >
+                          + New Card
+                        </Button>
+                      </div>
                     ) : (
                       <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <ShieldCheck className="w-3 h-3 text-emerald-500" /> Payment Verified
@@ -807,14 +872,23 @@ export default function NewSale() {
 
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tax</span>
-                <select
-                  value={selectedTaxSlabId}
-                  onChange={(e) => setSelectedTaxSlabId(e.target.value)}
-                  className="bg-transparent border-none text-right font-black text-[10px] uppercase text-indigo-600 focus:ring-0 cursor-pointer"
-                >
-                  <option value="">NO TAX (0%)</option>
-                  {taxSlabs.map(slab => <option key={slab.id} value={slab.id}>{slab.name} ({slab.percentage}%)</option>)}
-                </select>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => navigate('/tax-settings')}
+                    className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                    title="Manage Taxes"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                  </button>
+                  <select
+                    value={selectedTaxSlabId}
+                    onChange={(e) => setSelectedTaxSlabId(e.target.value)}
+                    className="bg-transparent border-none text-right font-black text-[10px] uppercase text-indigo-600 focus:ring-0 cursor-pointer"
+                  >
+                    <option value="">NO TAX (0%)</option>
+                    {taxSlabs.map(slab => <option key={slab.id} value={slab.id}>{slab.name} ({slab.percentage}%)</option>)}
+                  </select>
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
@@ -937,6 +1011,47 @@ export default function NewSale() {
               }}
             >
               Add Customer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Gift Card Dialog */}
+      <Dialog open={newGiftCardOpen} onOpenChange={setNewGiftCardOpen}>
+        <DialogContent className="sm:max-w-[440px] rounded-[3rem] border-none p-12 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-8">New Gift Card</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 mb-10">
+            <div>
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Card Number</Label>
+                <Input className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 font-bold uppercase focus:ring-2 focus:ring-primary mt-2" value={newCardNumber} onChange={(e) => setNewCardNumber(e.target.value)} placeholder="e.g. GC-1001" />
+            </div>
+            <div>
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Value Amount</Label>
+                <Input type="number" className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 font-bold uppercase focus:ring-2 focus:ring-primary mt-2" value={newCardValue} onChange={(e) => setNewCardValue(e.target.value)} placeholder="0.00" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              className="w-full bg-primary text-white h-16 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest"
+              onClick={async () => {
+                if (!newCardNumber || !newCardValue) return;
+                await addGiftCard({
+                    cardNumber: newCardNumber,
+                    value: parseFloat(newCardValue),
+                    balance: parseFloat(newCardValue),
+                    isActive: true,
+                    customerId: customerId || undefined,
+                    storeId: activeStoreId
+                });
+                setNewGiftCardOpen(false);
+                setNewCardNumber('');
+                setNewCardValue('');
+                toast.success("Gift Card created successfully!");
+              }}
+            >
+              Create Gift Card
             </Button>
           </DialogFooter>
         </DialogContent>

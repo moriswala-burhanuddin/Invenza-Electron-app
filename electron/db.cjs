@@ -449,6 +449,15 @@ try {
         db.prepare(`ALTER TABLE ${table} ADD COLUMN device_id TEXT`).run();
       }
 
+      // 6. expense_category_id Migration
+      if (table === 'transactions') {
+        const hasExpCatId = info.some(col => col.name === 'expense_category_id');
+        if (!hasExpCatId) {
+          console.log(`[DB] Migrating transactions: Adding expense_category_id column...`);
+          db.prepare(`ALTER TABLE transactions ADD COLUMN expense_category_id TEXT`).run();
+        }
+      }
+
       // 4. Product Category Link Migration
       if (table === 'products') {
         const hasCategoryId = info.some(col => col.name === 'categoryId');
@@ -1138,6 +1147,7 @@ db.exec(`
     company_id TEXT,
     store_id TEXT NOT NULL,
     name TEXT NOT NULL,
+    description TEXT,
     sku TEXT UNIQUE,
     category TEXT,
     selling_price REAL NOT NULL,
@@ -1348,6 +1358,7 @@ db.exec(`
     store_id TEXT NOT NULL,
     account_id TEXT NOT NULL,
     customer_id TEXT,
+    expense_category_id TEXT,
     type TEXT NOT NULL, -- 'income', 'expense', 'payment'
     amount REAL NOT NULL,
     description TEXT,
@@ -1368,7 +1379,6 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_sales_company_store ON sales(company_id, store_id);
   CREATE INDEX IF NOT EXISTS idx_customers_company_store ON customers(company_id, store_id);
   CREATE INDEX IF NOT EXISTS idx_transactions_company_store ON transactions(company_id, store_id);
-  CREATE INDEX IF NOT EXISTS idx_stock_logs_company_store ON stock_logs(company_id, store_id);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_tenant_invoice ON sales(company_id, invoice_number) WHERE is_deleted = 0;
 
   CREATE TABLE IF NOT EXISTS sale_payments (
@@ -1435,8 +1445,12 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS tax_slabs (
     id TEXT PRIMARY KEY,
     company_id TEXT,
+    store_id TEXT,
     name TEXT NOT NULL,
     percentage REAL NOT NULL,
+    device_id TEXT,
+    is_deleted INTEGER DEFAULT 0,
+    deleted_at TEXT,
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
     sync_status INTEGER DEFAULT 0
   );
@@ -1872,8 +1886,8 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS gift_cards (
     id TEXT PRIMARY KEY,
-    company_id TEXT,
-    card_number TEXT UNIQUE NOT NULL,
+    company_id TEXT NOT NULL,
+    card_number TEXT NOT NULL,
     value REAL NOT NULL,
     balance REAL NOT NULL,
     is_active INTEGER DEFAULT 1,
@@ -2409,6 +2423,15 @@ id, name, email,
   if (!userInfo.some(col => col.name === 'username')) missingUserFields.push('username TEXT');
   if (!userInfo.some(col => col.name === 'first_name')) missingUserFields.push('first_name TEXT');
   if (!userInfo.some(col => col.name === 'last_name')) missingUserFields.push('last_name TEXT');
+  try {
+      db.prepare('ALTER TABLE products ADD COLUMN tax_slab_id TEXT').run();
+    } catch(e) {}
+    
+    // Phase Multi-Tenant Tax Slabs Migration
+    try { db.prepare('ALTER TABLE tax_slabs ADD COLUMN store_id TEXT').run(); } catch(e) {}
+    try { db.prepare('ALTER TABLE tax_slabs ADD COLUMN device_id TEXT').run(); } catch(e) {}
+    try { db.prepare('ALTER TABLE tax_slabs ADD COLUMN is_deleted INTEGER DEFAULT 0').run(); } catch(e) {}
+    try { db.prepare('ALTER TABLE tax_slabs ADD COLUMN deleted_at TEXT').run(); } catch(e) {}
   if (!userInfo.some(col => col.name === 'is_staff')) missingUserFields.push('is_staff INTEGER DEFAULT 0');
   if (!userInfo.some(col => col.name === 'is_active')) missingUserFields.push('is_active INTEGER DEFAULT 1');
   if (!userInfo.some(col => col.name === 'password')) missingUserFields.push('password TEXT');
@@ -2427,6 +2450,10 @@ id, name, email,
   }
   if (!productsCols.some(col => col.name === 'reorder_quantity')) {
     db.prepare('ALTER TABLE products ADD COLUMN reorder_quantity INTEGER DEFAULT 0').run();
+  }
+  
+  if (!productsCols.some(col => col.name === 'description')) {
+    db.prepare('ALTER TABLE products ADD COLUMN description TEXT').run();
   }
 
   // Suppliers Migration
@@ -2804,7 +2831,9 @@ const toCamelCase = (obj) => {
   const newObj = {}
   for (const key in obj) {
     const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase())
-    newObj[camelKey] = obj[key]
+    if (obj[key] !== null || newObj[camelKey] === undefined) {
+      newObj[camelKey] = obj[key]
+    }
   }
   // Alignment: ensure categories are accessible via categoryName (frontend expectation)
   if (newObj.category && !newObj.categoryName) {
@@ -3033,7 +3062,13 @@ const dbHelpers = {
   // Products
   getAllProducts: (companyId, storeId) => {
     const effectiveStoreId = storeRedirects.get(storeId) || storeId;
-    const query = 'SELECT * FROM products WHERE store_id = ? AND is_deleted = 0 ORDER BY updated_at DESC'
+    const query = `
+      SELECT p.*, c.name as categoryName 
+      FROM products p 
+      LEFT JOIN categories c ON (p.category_id = c.id OR p.categoryId = c.id)
+      WHERE p.store_id = ? AND p.is_deleted = 0 
+      ORDER BY p.updated_at DESC
+    `
     const products = db.prepare(query).all(effectiveStoreId).map(toCamelCase)
     
     if (products.length === 0) return [];
@@ -3068,21 +3103,26 @@ const dbHelpers = {
   },
 
   getProductByBarcode: (barcode, storeId) => {
-    const product = db.prepare('SELECT * FROM products WHERE barcode = ? AND store_id = ?').get(barcode, storeId)
+    const product = db.prepare(`
+      SELECT p.*, c.name as categoryName 
+      FROM products p 
+      LEFT JOIN categories c ON (p.category_id = c.id OR p.categoryId = c.id)
+      WHERE p.barcode = ? AND p.store_id = ?
+    `).get(barcode, storeId)
     return product ? toCamelCase(product) : null
   },
 
   addProduct: (product) => {
     try {
       const stmt = db.prepare(`
-        INSERT INTO products(id, company_id, store_id, name, sku, category, selling_price, purchase_price, quantity, last_used, unit, brand, barcode, min_stock, reorder_quantity, device_id, updated_at, sync_status, categoryId)
-        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 0, ?)
+        INSERT INTO products(id, company_id, store_id, name, description, sku, category, selling_price, purchase_price, quantity, last_used, unit, brand, barcode, min_stock, reorder_quantity, device_id, updated_at, sync_status, categoryId, category_id)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 0, ?, ?)
       `)
       stmt.run(
-        product.id, product.companyId, product.storeId, product.name, product.sku, product.category || product.categoryName,
+        product.id, product.companyId, product.storeId, product.name, product.description, product.sku, product.category || product.categoryName,
         product.sellingPrice, product.purchasePrice, product.quantity || 0,
         product.lastUsed, product.unit, product.brand,
-        product.barcode, product.minStock || 0, product.reorderQuantity || 0, deviceId, product.categoryId
+        product.barcode, product.minStock || 0, product.reorderQuantity || 0, deviceId, product.categoryId, product.categoryId
       )
 
       // Save Custom Values if provided
@@ -3090,7 +3130,12 @@ const dbHelpers = {
         dbHelpers.saveCustomValues(product.id, product.customValues, 'product', product.companyId, product.storeId);
       }
 
-      const result = db.prepare('SELECT * FROM products WHERE id = ?').get(product.id)
+      const result = db.prepare(`
+        SELECT p.*, c.name as categoryName 
+        FROM products p 
+        LEFT JOIN categories c ON (p.category_id = c.id OR p.categoryId = c.id)
+        WHERE p.id = ?
+      `).get(product.id)
       return {
         ...toCamelCase(result),
         customValues: dbHelpers.getCustomValues(product.id, 'product', product.companyId)
@@ -3107,6 +3152,7 @@ const dbHelpers = {
 
     const fieldMap = {
       name: 'name',
+      description: 'description',
       sellingPrice: 'selling_price',
       purchasePrice: 'purchase_price',
       quantity: 'quantity',
@@ -3118,13 +3164,20 @@ const dbHelpers = {
       barcode: 'barcode',
       minStock: 'min_stock',
       reorderQuantity: 'reorder_quantity',
-      lastUsed: 'last_used'
+      lastUsed: 'last_used',
+      categoryId: 'category_id',
+      category_id: 'category_id'
     }
 
     Object.keys(updates).forEach(key => {
       if (fieldMap[key]) {
         fields.push(`${fieldMap[key]} = ?`)
         values.push(updates[key])
+        // If it's categoryId, also update the redundant categoryId column to keep them in sync locally
+        if (key === 'categoryId' || key === 'category_id') {
+          fields.push(`categoryId = ?`)
+          values.push(updates[key])
+        }
       }
     })
 
@@ -3146,7 +3199,12 @@ const dbHelpers = {
       }
     }
 
-    const result = db.prepare('SELECT * FROM products WHERE id = ?').get(id)
+    const result = db.prepare(`
+      SELECT p.*, c.name as categoryName 
+      FROM products p 
+      LEFT JOIN categories c ON (p.category_id = c.id OR p.categoryId = c.id)
+      WHERE p.id = ?
+    `).get(id)
     return {
         ...toCamelCase(result),
         customValues: result ? dbHelpers.getCustomValues(id, 'product', result.company_id) : []
@@ -3544,9 +3602,22 @@ VALUES(?, ?, ?, ?, ?, 0)
     return db.prepare('SELECT u.*, e.id as employee_id FROM users u LEFT JOIN employees e ON u.id = e.user_id WHERE u.is_deleted = 0').all().map(toCamelCase);
   },
 
-  getDashboardMetrics: (companyId, storeId) => {
+  getDashboardMetrics: (companyId, storeId, dateRange) => {
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const company = resolveCompanyId(companyId);
+      const companyWithDecimal = `${company}.0`;
+      
+      let startDate = new Date();
+      if (dateRange === 'year') {
+        startDate.setFullYear(startDate.getFullYear() - 1);
+      } else if (dateRange === 'month') {
+        startDate.setMonth(startDate.getMonth() - 1);
+      } else if (dateRange === 'week') {
+        startDate.setDate(startDate.getDate() - 7);
+      } else {
+        startDate.setHours(0, 0, 0, 0); // Start of today
+      }
+      const dateFilterStr = startDate.toISOString().split('T')[0];
 
       // 1. Sales Metrics (Aggregated with Breakdown)
       const effectiveStoreId = storeRedirects.get(storeId) || storeId;
@@ -3560,38 +3631,39 @@ VALUES(?, ?, ?, ?, ?, 0)
           SUM(CASE WHEN source = 'Online' THEN total_amount ELSE 0 END) as online_revenue,
           SUM(CASE WHEN source = 'POS' OR source IS NULL THEN total_amount ELSE 0 END) as pos_revenue
         FROM sales 
-        WHERE store_id = ? AND is_deleted = 0
-      `).get(today, today, effectiveStoreId)
+        WHERE store_id = ? AND (company_id = ? OR company_id = ? OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 AND date >= ?
+      `).get(dateFilterStr, dateFilterStr, effectiveStoreId, company, companyWithDecimal, dateFilterStr)
 
       // 2. Inventory Metrics
       const inventoryMetrics = db.prepare(`
         SELECT
           SUM(quantity) as total_items,
           SUM(quantity * purchase_price) as inventory_value,
-          COUNT(CASE WHEN quantity <= min_stock AND is_deleted = 0 THEN 1 END) as low_stock_count
+          COUNT(CASE WHEN quantity <= min_stock AND coalesce(is_deleted, 0) = 0 THEN 1 END) as low_stock_count
         FROM products 
-        WHERE store_id = ? AND is_deleted = 0
-      `).get(effectiveStoreId)
+        WHERE store_id = ? AND (company_id = ? OR company_id = ? OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0
+      `).get(effectiveStoreId, company, companyWithDecimal)
 
       // 3. Customers
-      const customerCount = db.prepare('SELECT COUNT(*) as count FROM customers WHERE store_id = ? AND is_deleted = 0').get(effectiveStoreId)?.count || 0
+      const customerCount = db.prepare('SELECT COUNT(*) as count FROM customers WHERE store_id = ? AND (company_id = ? OR company_id = ? OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0').get(effectiveStoreId, company, companyWithDecimal)?.count || 0
 
       // 4. Recent Activity (Last 5 Sales - Now including Source)
       const recentSales = db.prepare(`
         SELECT s.id, s.invoice_number, s.total_amount, s.date, s.source, c.name as customer_name
         FROM sales s
         LEFT JOIN customers c ON s.customer_id = c.id
-        WHERE s.store_id = ? AND s.is_deleted = 0
+        WHERE s.store_id = ? AND (s.company_id = ? OR s.company_id = ? OR s.company_id IS NULL) AND coalesce(s.is_deleted, 0) = 0
+        ORDER BY s.date DESC
         LIMIT 5
-      `).all(effectiveStoreId).map(toCamelCase)
+      `).all(effectiveStoreId, company, companyWithDecimal).map(toCamelCase)
 
       // 5. Low Stock Items
       const lowStockItems = db.prepare(`
         SELECT id, name, quantity, min_stock, sku
         FROM products
-        WHERE store_id = ? AND quantity <= min_stock AND is_deleted = 0
+        WHERE store_id = ? AND (company_id = ? OR company_id = ? OR company_id IS NULL) AND quantity <= min_stock AND coalesce(is_deleted, 0) = 0
         LIMIT 5
-      `).all(effectiveStoreId).map(toCamelCase)
+      `).all(effectiveStoreId, company, companyWithDecimal).map(toCamelCase)
 
       return {
         revenue: salesMetrics?.total_revenue || 0,
@@ -3658,6 +3730,7 @@ VALUES(?, ?, ?, ?, ?, 0)
         const isSuperuser = user.role === 'super_admin' ? 1 : 0;
         const isStaff = (user.isStaff || user.role === 'admin' || user.role === 'super_admin') ? 1 : 0;
 
+        const finalStoreIdUpdate = user.storeId === '' ? null : user.storeId;
         db.prepare(`
           UPDATE users SET 
             name = ?, email = ?, username = ?, first_name = ?, last_name = ?, 
@@ -3670,7 +3743,7 @@ VALUES(?, ?, ?, ?, ?, 0)
           firstName, lastName, password, user.role,
           isStaff, isSuperuser,
           user.isActive !== false ? 1 : 0,
-          user.storeId, user.avatar, deviceId,
+          finalStoreIdUpdate, user.avatar, deviceId,
           existing.id
         )
         const result = db.prepare('SELECT * FROM users WHERE id = ?').get(existing.id)
@@ -3695,12 +3768,13 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), 0)
     const isSuperuser = user.role === 'super_admin' ? 1 : 0;
     const isStaff = (user.isStaff || user.role === 'admin' || user.role === 'super_admin') ? 1 : 0;
 
+    const finalStoreId = user.storeId === '' ? null : user.storeId;
     stmt.run(
       user.id, user.name, user.email, user.username || user.email,
       firstName, lastName, password, user.role,
       isStaff, isSuperuser,
       user.isActive !== false ? 1 : 0,  // Default to active
-      user.storeId, user.avatar, deviceId
+      finalStoreId, user.avatar, deviceId
     )
     const result = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id)
     return toCamelCase(result)
@@ -3740,6 +3814,10 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), 0)
            values.push((val === 'admin' || val === 'super_admin') ? 1 : 0);
         }
 
+        if (key === 'storeId' && val === '') {
+           val = null;
+        }
+
         fields.push(`${fieldMap[key]} = ?`)
         values.push(val)
       }
@@ -3752,7 +3830,12 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), 0)
   },
 
   deleteUser: (id) => {
-    return db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id)
+    const transaction = db.transaction(() => {
+      db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
+      db.prepare("UPDATE employees SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE user_id = ? AND is_deleted = 0").run(id);
+    });
+    transaction();
+    return { success: true };
   },
 
   verifyPassword: (id, password) => {
@@ -3927,23 +4010,23 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), 0)
   getSupplierLedger: (supplierId) => {
     // Get all purchases for supplier linked via ID instead of name
     const purchases = db.prepare(`
-      SELECT 'PURCHASE' as type, invoice_number as reference, total_amount as debit, 0 as credit, date 
+      SELECT 'purchase' as type, invoice_number as referenceId, '' as description, total_amount as amount, date 
       FROM purchases WHERE supplier_id = ?
    `).all(supplierId)
 
     // Get all payments (transactions) for supplier
     const txs = db.prepare(`
-      SELECT 'PAYMENT' as type, reference_id as reference, 0 as debit, amount as credit, date 
+      SELECT 'payment' as type, reference_id as referenceId, description, amount, date 
       FROM supplier_transactions WHERE supplier_id = ?
    `).all(supplierId)
 
     // Combine and sort by date ascending for balance calculation
-    const ledger = [...purchases, ...txs].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const ledger = [...purchases, ...txs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     let balance = 0
     return ledger.map(row => {
-      balance += (row.debit - row.credit)
-      return { ...row, cumulative_balance: balance }
+      balance += (row.type === 'purchase' ? row.amount : -row.amount)
+      return { ...row, balanceAfter: balance }
     }).reverse() // Reverse for descending view in UI
   },
 
@@ -4811,15 +4894,20 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
   },
 
   addTransaction: (transaction) => {
-    const stmt = db.prepare(`
-      INSERT INTO transactions(id, company_id, type, amount, description, customer_id, customer_name, store_id, account_id, date, device_id, updated_at)
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `)
-    stmt.run(
-      transaction.id, transaction.companyId, transaction.type, transaction.amount, transaction.description,
-      transaction.customerId, transaction.customerName, transaction.storeId,
-      transaction.accountId, transaction.date, deviceId
-    )
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO transactions(id, company_id, type, amount, description, customer_id, store_id, account_id, date, device_id, updated_at, sync_status, expense_category_id)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 0, ?)
+      `)
+      stmt.run(
+        transaction.id, transaction.companyId, transaction.type, transaction.amount, transaction.description,
+        transaction.customerId, transaction.storeId,
+        transaction.accountId, transaction.date, deviceId, transaction.expenseCategoryId
+      )
+    } catch (err) {
+      console.error('[DB] addTransaction ERROR:', err.message);
+      throw err;
+    }
 
     // Update Account Balance
     const adjustment = transaction.type === 'cash_in' ? transaction.amount : -transaction.amount;
@@ -4916,10 +5004,11 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
         // Create product in destination store
         destProductId = `prod-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
         db.prepare(`
-          INSERT INTO products(id, name, sku, category, selling_price, purchase_price, quantity, store_id, unit, brand, barcode, min_stock, reorder_quantity, is_deleted, is_kit, barcode_enabled, tax_slab_id, device_id, discount_percentage, price_inr, price_usd, updated_at, sync_status)
-          VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 0)
+          INSERT INTO products(id, company_id, name, sku, category, category_id, categoryId, category_name, description, selling_price, purchase_price, quantity, store_id, unit, brand, barcode, min_stock, reorder_quantity, is_deleted, is_kit, barcode_enabled, tax_slab_id, device_id, discount_percentage, price_inr, price_usd, updated_at, sync_status)
+          VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 0)
         `).run(
-          destProductId, sourceProduct.name, sourceProduct.sku, sourceProduct.category, 
+          destProductId, sourceProduct.company_id, sourceProduct.name, sourceProduct.sku, sourceProduct.category, 
+          sourceProduct.category_id, sourceProduct.categoryId, sourceProduct.category_name, sourceProduct.description,
           sourceProduct.selling_price, sourceProduct.purchase_price, transfer.quantity, 
           transfer.toStoreId, sourceProduct.unit, sourceProduct.brand, sourceProduct.barcode, 
           sourceProduct.min_stock, sourceProduct.reorder_quantity, sourceProduct.is_deleted, 
@@ -4961,12 +5050,21 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
   // 6. Tax Management
   getTaxSlabs: (companyId) => {
     const company = resolveCompanyId(companyId);
-    return db.prepare('SELECT * FROM tax_slabs WHERE (company_id = ? OR company_id = ? OR company_id IS NULL)').all(company, `${company}.0`).map(toCamelCase)
+    return db.prepare('SELECT * FROM tax_slabs WHERE (company_id = ? OR company_id = ? OR company_id IS NULL) AND is_deleted = 0').all(company, `${company}.0`).map(toCamelCase)
   },
   addTaxSlab: (slab) => {
-    db.prepare("INSERT INTO tax_slabs (id, name, percentage, company_id, updated_at) VALUES (?, ?, ?, ?, datetime('now'))")
-      .run(slab.id, slab.name, slab.percentage, slab.companyId)
+    db.prepare("INSERT INTO tax_slabs (id, name, percentage, company_id, store_id, updated_at, sync_status) VALUES (?, ?, ?, ?, ?, datetime('now'), 0)")
+      .run(slab.id, slab.name, slab.percentage, slab.companyId, slab.storeId)
     return db.prepare('SELECT * FROM tax_slabs WHERE id = ?').get(slab.id)
+  },
+  deleteTaxSlab: (id) => {
+    const transaction = db.transaction(() => {
+        db.prepare("UPDATE tax_slabs SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0 WHERE id = ?").run(id);
+        // Remove from products
+        db.prepare("UPDATE products SET tax_slab_id = NULL, sync_status = 0 WHERE tax_slab_id = ?").run(id);
+    });
+    transaction();
+    return { success: true };
   },
 
   // 7. Loyalty Program
@@ -5161,16 +5259,30 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
   // Stores
   addStore: (store) => {
     try {
-      if (!store.companyId) {
-        console.warn("[DB] addStore: Missing company_id. Store will be created without tenant scope.");
+      let companyId = store.companyId;
+      if (!companyId) {
+        console.warn("[DB] addStore: Missing company_id. Store will be created with default tenant scope 1.");
+        companyId = 1;
       }
       
+      const existing = db.prepare(`SELECT id, is_deleted FROM stores WHERE company_id = ? AND name = ?`).get(companyId, store.name);
+      
+      if (existing) {
+        if (existing.is_deleted === 1) {
+           console.log(`[DB] Reactivating soft-deleted store: ${store.name}`);
+           db.prepare(`UPDATE stores SET branch = ?, address = ?, phone = ?, device_id = ?, updated_at = datetime('now'), sync_status = 0, is_deleted = 0 WHERE id = ?`).run(store.branch, store.address, store.phone, deviceId, existing.id);
+           return dbHelpers.getAllStores(companyId).find(s => s.id === existing.id);
+        } else {
+           throw new Error("A store with this name already exists in your company.");
+        }
+      }
+
       const stmt = db.prepare(`
         INSERT INTO stores(id, company_id, name, branch, address, phone, device_id, updated_at, sync_status, is_deleted)
         VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'), 0, 0)
       `)
-      stmt.run(store.id, store.companyId, store.name, store.branch, store.address, store.phone, deviceId)
-      return dbHelpers.getAllStores(store.companyId).find(s => s.id === store.id)
+      stmt.run(store.id, companyId, store.name, store.branch, store.address, store.phone, deviceId)
+      return dbHelpers.getAllStores(companyId).find(s => s.id === store.id)
     } catch (err) {
       console.error('[DB] addStore ERROR:', err.message)
       throw err
@@ -5634,8 +5746,9 @@ VALUES(?, ?)
     if (effectiveStoreId !== storeId) {
       console.log(`[DB] getReportData: Redirecting storeId ${storeId} -> ${effectiveStoreId}`);
     }
+    const company = resolveCompanyId(companyId);
     let query = ''
-    const params = { storeId: effectiveStoreId, companyId: companyId }
+    const params = { storeId: effectiveStoreId, company: company, companyWithDecimal: `${company}.0` }
 
     // Date filter clause
     const dateFilter = (dateField) => {
@@ -5657,12 +5770,23 @@ VALUES(?, ?)
         return [];
       }
 
+      // DEBUG: dump actual values in DB
+      try {
+        const debugSales = db.prepare('SELECT DISTINCT company_id, store_id FROM sales LIMIT 10').all();
+        console.log(`[REPORT DEBUG] Resolved company=${company}, companyWithDecimal=${company}.0, effectiveStoreId=${effectiveStoreId}`);
+        console.log(`[REPORT DEBUG] Distinct company_id+store_id in sales:`, JSON.stringify(debugSales));
+        const countAll = db.prepare('SELECT COUNT(*) as cnt FROM sales').get();
+        console.log(`[REPORT DEBUG] Total rows in sales table:`, countAll?.cnt);
+        const countFiltered = db.prepare('SELECT COUNT(*) as cnt FROM sales WHERE store_id = ? AND (company_id = ? OR company_id = ? OR company_id IS NULL)').get(effectiveStoreId, company, `${company}.0`);
+        console.log(`[REPORT DEBUG] Filtered rows (store+company match):`, countFiltered?.cnt);
+      } catch(debugErr) { console.log('[REPORT DEBUG ERROR]', debugErr.message); }
+
       switch (type) {
         case 'sales_summary':
           query = `
           SELECT date, COUNT(*) as count, SUM(total_amount) as total, SUM(profit) as profit
           FROM sales 
-          WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('date')}
+          WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('date')}
           GROUP BY date ORDER BY date DESC
   `
           break;
@@ -5672,7 +5796,7 @@ VALUES(?, ?)
           SELECT p.name, p.sku, SUM(json_extract(item.value, '$.quantity')) as qty, SUM(json_extract(item.value, '$.price') * json_extract(item.value, '$.quantity')) as revenue
           FROM sales s, json_each(s.items) as item
           JOIN products p ON p.id = json_extract(item.value, '$.productId')
-          WHERE s.store_id = @storeId AND s.company_id = @companyId AND s.is_deleted = 0 ${dateFilter('s.date')}
+          WHERE s.store_id = @storeId AND (s.company_id = @company OR s.company_id = @companyWithDecimal OR s.company_id IS NULL) AND coalesce(s.is_deleted, 0) = 0 ${dateFilter('s.date')}
           GROUP BY p.id ORDER BY revenue DESC
   `
           break;
@@ -5681,7 +5805,7 @@ VALUES(?, ?)
           query = `
           SELECT name, sku, category, quantity, purchase_price, (quantity * purchase_price) as value
           FROM products 
-          WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0
+          WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0
           ORDER BY quantity ASC
   `
           break;
@@ -5689,10 +5813,10 @@ VALUES(?, ?)
         case 'profit_loss':
           query = `
 SELECT
-  (SELECT SUM(total_amount) FROM sales WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('date')}) as revenue,
-  (SELECT SUM(profit) FROM sales WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('date')}) as gross_profit,
-    (SELECT SUM(total_amount) FROM receivings WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('completed_at')}) as purchases,
-      (SELECT SUM(amount) FROM transactions WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 AND type = 'expense' ${dateFilter('date')}) as expenses
+  (SELECT SUM(total_amount) FROM sales WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('date')}) as revenue,
+  (SELECT SUM(profit) FROM sales WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('date')}) as gross_profit,
+    (SELECT SUM(total_amount) FROM receivings WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('completed_at')}) as purchases,
+      (SELECT SUM(amount) FROM transactions WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 AND type = 'expense' ${dateFilter('date')}) as expenses
         `
           break;
 
@@ -5700,7 +5824,7 @@ SELECT
           query = `
           SELECT invoice_number, date, total_amount, (total_amount - profit) as taxable_value, (total_amount * 0.18) as tax_amount
           FROM sales 
-          WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('date')}
+          WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('date')}
           ORDER BY date DESC
   `
           break;
@@ -5709,7 +5833,7 @@ SELECT
           query = `
           SELECT party_name, party_type, cheque_number, bank_name, amount, issue_date, status
           FROM cheques 
-          WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('issue_date')}
+          WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('issue_date')}
           ORDER BY issue_date DESC
   `
           break;
@@ -5720,7 +5844,7 @@ SELECT
           FROM attendance a
           JOIN employees e ON e.id = a.employee_id
           JOIN users u ON u.id = e.user_id
-          WHERE a.store_id = @storeId AND a.company_id = @companyId AND a.is_deleted = 0 ${dateFilter('a.date')}
+          WHERE a.store_id = @storeId AND (a.company_id = @company OR a.company_id = @companyWithDecimal OR a.company_id IS NULL) AND coalesce(a.is_deleted, 0) = 0 ${dateFilter('a.date')}
           ORDER BY a.date DESC
   `
           break;
@@ -5730,7 +5854,7 @@ SELECT
           SELECT supplier_id, (SELECT company_name FROM suppliers WHERE id = supplier_id) as supplier_name,
   COUNT(*) as count, SUM(total_amount) as total
           FROM receivings
-          WHERE store_id = @storeId AND company_id = @companyId AND is_deleted = 0 ${dateFilter('completed_at')}
+          WHERE store_id = @storeId AND (company_id = @company OR company_id = @companyWithDecimal OR company_id IS NULL) AND coalesce(is_deleted, 0) = 0 ${dateFilter('completed_at')}
           GROUP BY supplier_id
   `
           break;

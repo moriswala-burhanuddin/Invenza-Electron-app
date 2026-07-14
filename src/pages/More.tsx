@@ -88,7 +88,7 @@ export default function More() {
     <div className="min-h-screen bg-[#F2F2F7] pb-40">
       {/* Superior Header */}
       <div className="bg-white border-b border-slate-100 z-50 sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:h-24 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
           <div className="flex items-center gap-6">
             <div className="p-4 bg-primary rounded-2xl text-white shadow-xl shadow-slate-200">
               <Settings2 className="w-6 h-6" />
@@ -116,13 +116,13 @@ export default function More() {
         {/* Personnel Status */}
         <div className="bg-primary rounded-[2.5rem] p-10 text-white shadow-2xl shadow-black/20 flex flex-col md:flex-row md:items-center justify-between gap-10 relative overflow-hidden group">
           <Cpu className="absolute -right-8 -bottom-8 w-40 h-40 text-white/5 group-hover:rotate-45 transition-transform duration-1000" />
-          <div className="flex items-center gap-8 relative z-10">
-            <div className="w-24 h-24 rounded-[2rem] bg-indigo-500 flex items-center justify-center text-4xl font-black shadow-2xl shadow-indigo-500/20">
+          <div className="flex items-center gap-6 relative z-10 min-w-0 w-full md:w-auto">
+            <div className="w-20 h-20 md:w-24 md:h-24 flex-shrink-0 rounded-[2rem] bg-indigo-500 flex items-center justify-center text-3xl md:text-4xl font-black shadow-2xl shadow-indigo-500/20">
               {currentUser?.name.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h2 className="text-3xl font-black uppercase tracking-tight">{currentUser?.name}</h2>
-              <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">{currentUser?.email}</p>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight truncate">{currentUser?.name}</h2>
+              <p className="text-[9px] md:text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 truncate">{currentUser?.email}</p>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className={cn(

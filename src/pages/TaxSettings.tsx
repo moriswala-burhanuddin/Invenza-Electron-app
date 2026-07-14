@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export default function TaxSettings() {
-    const { taxSlabs, addTaxSlab, checkPermission } = useERPStore();
+    const { taxSlabs, addTaxSlab, deleteTaxSlab, checkPermission } = useERPStore();
     const [newSlab, setNewSlab] = useState({ name: '', percentage: '' });
 
     const canManageTax = checkPermission('canManageTaxes');
@@ -133,7 +133,12 @@ export default function TaxSettings() {
                                                         <h4 className="font-black text-base text-slate-900 uppercase tracking-tight mb-1">{slab.name}</h4>
                                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">FISCAL_SLAB_ID: {slab.id.substring(0, 8).toUpperCase()}</p>
                                                     </div>
-                                                    <button onClick={() => {/* Delete Logic */ }} className="p-3 bg-white text-slate-200 hover:text-rose-600 rounded-xl transition-all border border-slate-50 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
+                                                    <button onClick={async () => {
+                                                        if (confirm('Are you sure you want to delete this tax slab? It will be removed from all products.')) {
+                                                            await deleteTaxSlab(slab.id);
+                                                            toast.success('Tax slab deleted successfully.');
+                                                        }
+                                                    }} className="p-3 bg-white text-slate-200 hover:text-rose-600 rounded-xl transition-all border border-slate-50 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>

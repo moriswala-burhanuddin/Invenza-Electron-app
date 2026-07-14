@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useERPStore } from '@/lib/store-data';
-import { Plus, Minus, Trash2, X, Camera, Loader2, ArrowLeft, MoreHorizontal, Zap, ShieldCheck, ShoppingCart, CreditCard, Wallet, Banknote, ListPlus, Box, Search, Package, Save, History } from 'lucide-react';
+import { Plus, Minus, Trash2, X, Camera, Loader2, ArrowLeft, MoreHorizontal, Zap, ShieldCheck, ShoppingCart, CreditCard, Wallet, Banknote, ListPlus, Box, Search, Package, Save, History, Check, ChevronsUpDown, Building2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,14 +30,18 @@ interface CartItem {
 export default function NewPurchase() {
   const navigate = useNavigate();
   const { hasFeature } = useLicense();
-  const { getStoreProducts, getStoreAccounts, addPurchase, activeStoreId, checkPermission } = useERPStore();
+  const { getStoreProducts, getStoreAccounts, addPurchase, activeStoreId, checkPermission, getStoreSuppliers, addSupplier } = useERPStore();
 
   const products = getStoreProducts();
   const accounts = getStoreAccounts();
+  const suppliers = getStoreSuppliers();
 
   const { baseCurrency } = useStoreConfig();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [supplier, setSupplier] = useState('');
+  const [supplierId, setSupplierId] = useState('');
+  const [supplierSearchOpen, setSupplierSearchOpen] = useState(false);
+  const [newSupplierOpen, setNewSupplierOpen] = useState(false);
+  const [newSupplier, setNewSupplier] = useState({ companyName: '', phone: '', email: '' });
   const [purchaseType, setPurchaseType] = useState<'cash' | 'credit'>('cash');
   const [accountId, setAccountId] = useState('');
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -136,8 +143,8 @@ export default function NewPurchase() {
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleSubmit = async () => {
-    if (cart.length === 0 || !supplier) {
-      toast.error("Please add a supplier name and at least one product.");
+    if (cart.length === 0 || !supplierId) {
+      toast.error("Please select a supplier and add at least one product.");
       return;
     }
 
@@ -147,8 +154,10 @@ export default function NewPurchase() {
     }
 
     try {
+      const selectedSupplier = suppliers.find(s => s.id === supplierId);
       await addPurchase({
-        supplier,
+        supplier: selectedSupplier?.companyName || "UNKNOWN",
+        supplierId: supplierId,
         type: purchaseType,
         items: cart.map(item => ({
           productId: item.productId,
@@ -239,15 +248,54 @@ export default function NewPurchase() {
                   )}
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-8">
                   <div className="space-y-4">
                     <Label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Supplier Name</Label>
-                    <Input
-                      value={supplier}
-                      onChange={(e) => setSupplier(e.target.value)}
-                      className="h-16 bg-slate-50 border-none rounded-2xl px-6 text-[11px] font-black uppercase focus:ring-2 focus:ring-primary placeholder:text-slate-200"
-                      placeholder="Enter Source ID..."
-                    />
+                    <Popover open={supplierSearchOpen} onOpenChange={setSupplierSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <button className={cn(
+                          "w-full h-16 rounded-2xl px-6 font-black text-xs uppercase flex items-center justify-between border-2 transition-all group",
+                          supplierId ? "border-slate-100 bg-slate-50" : "border-dashed border-slate-200 hover:border-primary text-slate-400"
+                        )}>
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center">
+                              <Building2 className="w-4 h-4 text-slate-300" />
+                            </div>
+                            <div className="text-left">
+                              <p className={cn("leading-none mb-1", supplierId ? "text-slate-900" : "text-slate-300")}>
+                                {supplierId ? suppliers.find(s => s.id === supplierId)?.companyName : "SELECT SUPPLIER"}
+                              </p>
+                              <p className="text-[9px] opacity-60">Supplier Account</p>
+                            </div>
+                          </div>
+                          <ChevronsUpDown className="w-4 h-4 opacity-30" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0 border-none rounded-2xl shadow-2xl" align="start">
+                        <Command className="rounded-2xl border-none">
+                          <CommandInput placeholder="Search Supplier List..." className="h-14 pl-12" />
+                          <CommandList className="max-h-80">
+                            <CommandEmpty className="py-10 text-center text-slate-400 text-[10px]">No suppliers found</CommandEmpty>
+                            <CommandGroup>
+                              {suppliers.map(s => (
+                                <CommandItem key={s.id} onSelect={() => { setSupplierId(s.id); setSupplierSearchOpen(false); }} className="py-4 px-6 gap-4">
+                                  <Check className={cn("h-4 w-4", supplierId === s.id ? "opacity-100" : "opacity-0")} />
+                                  <div className="flex-1">
+                                    <p className="font-black text-xs">{s.companyName}</p>
+                                    <p className="text-[9px] text-slate-400 lowercase">{s.phone} {s.email}</p>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                            <div className="p-2 border-t border-slate-50 bg-slate-50/50">
+                              <Button onClick={() => setNewSupplierOpen(true)} className="w-full bg-primary text-white h-12 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                New Supplier
+                              </Button>
+                            </div>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-4">
                     <Label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Payment Type</Label>
@@ -436,7 +484,10 @@ export default function NewPurchase() {
         onClose={() => setIsReviewModalOpen(false)}
         extractedData={extractedData}
         onConfirm={(data: ExtractedData) => {
-          if (data.supplier) setSupplier(data.supplier);
+          if (data.supplier) {
+            const foundSupplier = suppliers.find(s => s.companyName.toLowerCase() === data.supplier?.toLowerCase());
+            if (foundSupplier) setSupplierId(foundSupplier.id);
+          }
 
           if (data.items && Array.isArray(data.items)) {
             const newItems: CartItem[] = data.items.map(item => ({
@@ -452,6 +503,57 @@ export default function NewPurchase() {
         }}
         availableProducts={products}
       />
+
+      {/* New Supplier Dialog */}
+      <Dialog open={newSupplierOpen} onOpenChange={setNewSupplierOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-[3rem] border-none p-12 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-10">New Supplier</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 mb-10">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Company Name</Label>
+              <Input className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 font-bold uppercase focus:ring-2 focus:ring-primary" value={newSupplier.companyName} onChange={(e) => setNewSupplier({ ...newSupplier, companyName: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone</Label>
+                <Input className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 font-bold focus:ring-2 focus:ring-primary" value={newSupplier.phone} onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</Label>
+                <Input className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 font-bold lowercase focus:ring-2 focus:ring-primary" value={newSupplier.email} onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              className="w-full bg-primary text-white h-16 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest"
+              onClick={async () => {
+                if (!newSupplier.companyName) return;
+                await addSupplier({ 
+                  companyName: newSupplier.companyName, 
+                  phone: newSupplier.phone, 
+                  email: newSupplier.email,
+                  storeId: activeStoreId,
+                  openingBalance: 0,
+                  creditLimit: 0,
+                  currency: baseCurrency,
+                  address: '',
+                  city: '',
+                  country: '',
+                  taxId: ''
+                });
+                setNewSupplierOpen(false);
+                setNewSupplier({ companyName: '', phone: '', email: '' });
+                toast.success(`Supplier registered: ${newSupplier.companyName}`);
+              }}
+            >
+              Add Supplier
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

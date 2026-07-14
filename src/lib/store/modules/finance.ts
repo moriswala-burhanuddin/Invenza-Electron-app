@@ -1,4 +1,4 @@
-import { StoreSlice, FinanceState, ExpenseCategory, TaxSlab, Account, Transaction, Invoice, Cheque } from '../types';
+import { StoreSlice, FinanceState, ExpenseCategory, TaxSlab, Account, Transaction, Invoice, Cheque, Commission, PurchaseOrder } from '../types';
 import { dbAdapter } from '../../db-adapter';
 import { isElectron } from '../../electron-helper';
 import { generateId, generateInvoice } from '../../utils';
@@ -22,7 +22,7 @@ export const createFinanceSlice: StoreSlice<FinanceState> = (set, get) => ({
       companyId: get().currentUser?.companyId 
     } as ExpenseCategory;
     await dbAdapter.addExpenseCategory?.(cat);
-    const expenseCategories = await dbAdapter.getExpenseCategories?.() as ExpenseCategory[];
+    const expenseCategories = await dbAdapter.getExpenseCategories?.(get().currentUser?.companyId || '') as ExpenseCategory[];
     if (expenseCategories) set({ expenseCategories });
   },
 
@@ -31,10 +31,18 @@ export const createFinanceSlice: StoreSlice<FinanceState> = (set, get) => ({
     const slab = { 
       ...slabData, 
       id: `tax-${Date.now()}`,
-      companyId: get().currentUser?.companyId 
+      companyId: get().currentUser?.companyId,
+      storeId: get().activeStoreId
     } as TaxSlab;
     await dbAdapter.addTaxSlab?.(slab);
-    const taxSlabs = await dbAdapter.getTaxSlabs?.() as TaxSlab[];
+    const taxSlabs = await dbAdapter.getTaxSlabs?.(get().currentUser?.companyId || '') as TaxSlab[];
+    if (taxSlabs) set({ taxSlabs });
+  },
+
+  deleteTaxSlab: async (id) => {
+    if (!isElectron()) return;
+    await dbAdapter.deleteTaxSlab?.(id);
+    const taxSlabs = await dbAdapter.getTaxSlabs?.(get().currentUser?.companyId || '') as TaxSlab[];
     if (taxSlabs) set({ taxSlabs });
   },
 
@@ -73,7 +81,7 @@ export const createFinanceSlice: StoreSlice<FinanceState> = (set, get) => ({
   },
 
   addTransaction: (transaction) => {
-    const newTransaction = { ...transaction, id: generateId(), updatedAt: new Date().toISOString() } as Transaction;
+    const newTransaction = { ...transaction, id: generateId(), companyId: get().currentUser?.companyId, updatedAt: new Date().toISOString() } as Transaction;
 
     set((state) => {
       const updatedAccounts = state.accounts.map(a => {
@@ -103,8 +111,9 @@ export const createFinanceSlice: StoreSlice<FinanceState> = (set, get) => ({
 
   fetchInvoices: async () => {
     if (!isElectron()) return;
+    const commissions = await dbAdapter.getCommissions?.(get().activeStoreId, get().currentUser?.companyId || '') as Commission[];
     const invoices = await dbAdapter.getInvoices?.(get().activeStoreId) || [];
-    set({ invoices });
+    set({ invoices, commissions });
   },
 
   getInvoiceById: async (id) => {
@@ -153,8 +162,9 @@ export const createFinanceSlice: StoreSlice<FinanceState> = (set, get) => ({
   },
 
   fetchCheques: async () => {
+    const purchaseOrders = await dbAdapter.getPurchaseOrders?.(get().activeStoreId, get().currentUser?.companyId || '') as PurchaseOrder[];
     const data = await dbAdapter.getCheques?.(get().activeStoreId);
-    if (data) set({ cheques: data as Cheque[] });
+    if (data) set({ cheques: data as Cheque[], purchaseOrders });
   },
 
   addCheque: async (chequeData) => {

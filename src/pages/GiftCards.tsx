@@ -12,10 +12,15 @@ import {
 import { format } from 'date-fns';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 export default function GiftCards() {
-    const { giftCards, getStoreCustomers, activeStoreId, updateGiftCard } = useERPStore();
+    const { giftCards, getStoreCustomers, activeStoreId, updateGiftCard, addGiftCard } = useERPStore();
     const [searchQuery, setSearchQuery] = useState('');
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newCardNumber, setNewCardNumber] = useState('');
+    const [newValue, setNewValue] = useState('');
+    const [newCustomerId, setNewCustomerId] = useState('');
 
     const customers = getStoreCustomers();
 
@@ -32,7 +37,27 @@ export default function GiftCards() {
 
     const handleToggleStatus = (id: string, current: boolean) => {
         updateGiftCard(id, { isActive: !current });
-        toast.info(`Registry Update: Voucher ${!current ? 'ACTIVATED' : 'DEACTIVATED'}.`);
+        toast.info(`Gift Card ${!current ? 'ACTIVATED' : 'DEACTIVATED'}.`);
+    };
+
+    const handleAddCard = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newCardNumber || !newValue) return;
+        
+        await addGiftCard({
+            cardNumber: newCardNumber,
+            value: parseFloat(newValue),
+            balance: parseFloat(newValue),
+            isActive: true,
+            customerId: newCustomerId || undefined,
+            storeId: activeStoreId
+        });
+        
+        toast.success("Gift Card created successfully!");
+        setIsAddModalOpen(false);
+        setNewCardNumber('');
+        setNewValue('');
+        setNewCustomerId('');
     };
 
     return (
@@ -45,18 +70,21 @@ export default function GiftCards() {
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Value Reservoir</h1>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">Voucher Topology • {giftCards.length} Active Reservoirs</p>
+                            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Gift Cards</h1>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">Manage Gift Cards • {giftCards.length} Active Cards</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-xl text-purple-600 border border-purple-100">
                             <Zap className="w-3.5 h-3.5 animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">Liquidity Matrix Synced</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">Cloud Synced</span>
                         </div>
-                        <Button className="bg-primary text-white rounded-[1.2rem] h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        <Button 
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="bg-primary text-white rounded-[1.2rem] h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
                             <Plus className="w-4 h-4 mr-2 text-purple-400" />
-                            Issue Voucher
+                            Add Gift Card
                         </Button>
                     </div>
                 </div>
@@ -70,7 +98,7 @@ export default function GiftCards() {
                     </div>
                     <input
                         type="text"
-                        placeholder="IDENTIFY BY VOUCHER_REF OR ENTITY NAME..."
+                        placeholder="SEARCH BY CARD NUMBER OR CUSTOMER NAME..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full h-20 bg-white border-none rounded-[2.5rem] pl-20 pr-8 text-[11px] font-black uppercase tracking-widest focus:ring-2 focus:ring-primary shadow-sm"
@@ -120,7 +148,7 @@ export default function GiftCards() {
                                             <Badge className={cn("rounded-full px-3 py-1 font-black text-[8px] uppercase tracking-widest",
                                                 gc.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
                                             )}>
-                                                {gc.isActive ? 'NODAL_ACTIVE' : 'NODAL_OFFLINE'}
+                                                {gc.isActive ? 'ACTIVE' : 'INACTIVE'}
                                             </Badge>
                                         </div>
 
@@ -130,7 +158,7 @@ export default function GiftCards() {
                                                 <p className="text-3xl font-black text-slate-900 leading-none">{formatCurrency(gc.balance)}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-50">Base Value</p>
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 opacity-50">Original Value</p>
                                                 <p className="text-xl font-black text-slate-300 leading-none italic">{formatCurrency(gc.value)}</p>
                                             </div>
                                         </div>
@@ -142,8 +170,8 @@ export default function GiftCards() {
                                                 <User className="w-4 h-4" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 text-purple-600">Assigned Entity</p>
-                                                <p className="text-[11px] font-black text-slate-900 uppercase truncate">{customer?.name || 'GENERIC_HOLDER'}</p>
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 text-purple-600">Customer</p>
+                                                <p className="text-[11px] font-black text-slate-900 uppercase truncate">{customer?.name || 'N/A'}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -162,11 +190,70 @@ export default function GiftCards() {
                 {filteredCards.length === 0 && (
                     <div className="py-40 text-center opacity-30 flex flex-col items-center">
                         <Ghost className="w-20 h-20 text-slate-100 mb-8" />
-                        <h4 className="text-2xl font-black text-slate-900 uppercase">Reservoir Null</h4>
-                        <p className="text-[10px] font-black text-slate-400 uppercase mt-2 px-20 text-center max-w-sm">No vouchers identified within this liquidity sector. Issue a new reservoir to initiate tracking.</p>
+                        <h4 className="text-2xl font-black text-slate-900 uppercase">NO GIFT CARDS FOUND</h4>
+                        <p className="text-[10px] font-black text-slate-400 uppercase mt-2 px-20 text-center max-w-sm">ADD A NEW GIFT CARD TO GET STARTED.</p>
                     </div>
                 )}
             </main>
+
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+                <DialogContent className="rounded-[3rem] border-none shadow-2xl p-12 max-w-md">
+                    <DialogHeader className="mb-8">
+                        <DialogTitle className="text-3xl font-black text-slate-900 uppercase tracking-tighter">New Gift Card</DialogTitle>
+                    </DialogHeader>
+
+                    <form onSubmit={handleAddCard} className="space-y-6">
+                        <div>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Card Number</label>
+                            <input
+                                type="text"
+                                required
+                                value={newCardNumber}
+                                onChange={(e) => setNewCardNumber(e.target.value)}
+                                className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 text-sm font-black text-slate-900 focus:ring-2 focus:ring-primary"
+                                placeholder="e.g. GC-1001"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Value Amount</label>
+                            <input
+                                type="number"
+                                required
+                                min="0"
+                                step="0.01"
+                                value={newValue}
+                                onChange={(e) => setNewValue(e.target.value)}
+                                className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 text-sm font-black text-slate-900 focus:ring-2 focus:ring-primary"
+                                placeholder="0.00"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Customer (Optional)</label>
+                            <select
+                                value={newCustomerId}
+                                onChange={(e) => setNewCustomerId(e.target.value)}
+                                className="w-full h-14 bg-slate-50 border-none rounded-2xl px-6 text-sm font-black text-slate-900 focus:ring-2 focus:ring-primary appearance-none"
+                            >
+                                <option value="">No Customer</option>
+                                {customers.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <DialogFooter className="mt-10">
+                            <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)} className="rounded-2xl h-14 px-8 font-black uppercase text-[10px] tracking-widest">
+                                Cancel
+                            </Button>
+                            <Button type="submit" className="bg-primary text-white rounded-2xl h-14 px-10 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20">
+                                Create Card
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

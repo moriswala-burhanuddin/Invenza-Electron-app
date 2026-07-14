@@ -152,7 +152,7 @@ const DayBook = () => {
         <div className="min-h-screen bg-[#F2F2F7] pb-32">
             {/* Superior Header */}
             <div className="bg-white border-b border-slate-100 z-50 sticky top-0">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:h-24 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
                     <div className="flex items-center gap-6">
                         <div className="p-4 bg-primary rounded-2xl text-white shadow-xl shadow-black/10">
                             <Wallet className="w-6 h-6" />
@@ -201,7 +201,7 @@ const DayBook = () => {
                 ) : (
                   <>
                     {/* Liquidity Gauges */}
-                    <div className="grid md:grid-cols-4 gap-6 mb-12">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-6 mb-12">
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-white">
                             <div className="p-3 bg-blue-50 rounded-xl w-fit mb-6 text-blue-500">
                                 <CreditCard className="w-5 h-5" />
@@ -233,8 +233,8 @@ const DayBook = () => {
                     </div>
 
                     <div className="bg-white rounded-[3.5rem] shadow-sm border border-white overflow-hidden">
-                        <div className="p-10 border-b border-slate-50 flex items-center justify-between">
-                            <div className="relative w-96 group">
+                        <div className="p-6 md:p-10 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="relative w-full md:w-96 group">
                                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-foreground transition-colors" />
                                 <input
                                     value={searchQuery}
