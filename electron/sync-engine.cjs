@@ -213,15 +213,26 @@ const syncEngine = {
 
                     // Conflict resolution: only update if incoming is newer or it's a new record
                     // We also ensure sync_status is set to 1 for pulled records
+                    // IMPORTANT: Allow update when local sync_status=1 OR when server marks record as deleted
+                    const whereClause = hasIsDeleted
+                        ? `WHERE ${table}.sync_status = 1 OR excluded.is_deleted = 1`
+                        : `WHERE ${table}.sync_status = 1`;
                     const sql = `
                         INSERT INTO ${table} (${columns.join(', ')}, sync_status) 
                         VALUES (${columns.map(() => '?').join(', ')}, 1)
                         ON CONFLICT(${conflictTarget}) DO UPDATE SET 
                             ${updateSets},
                             sync_status = 1
-                        WHERE ${table}.sync_status = 1
+                        ${whereClause}
                     `;
                     const stmt = db.prepare(sql);
+
+                    // Also prepare a direct is_deleted enforcer for records marked as deleted on server
+                    let deleteEnforcerStmt = null;
+                    if (hasIsDeleted) {
+                        const pkCol = pkCols[0] || 'id';
+                        deleteEnforcerStmt = db.prepare(`UPDATE ${table} SET is_deleted = 1, sync_status = 1 WHERE ${pkCol} = ? AND is_deleted = 0`);
+                    }
 
                     for (const row of rows) {
                         let rowValues = [];
@@ -233,6 +244,14 @@ const syncEngine = {
                                 return val;
                             });
                             stmt.run(...rowValues);
+
+                            // Force-enforce deletion: if server says deleted, make absolutely sure local record is deleted
+                            if (deleteEnforcerStmt && row['is_deleted']) {
+                                const pkVal = row[pkCols[0] || 'id'];
+                                if (pkVal) {
+                                    deleteEnforcerStmt.run(pkVal);
+                                }
+                            }
                         } catch (rowErr) {
                             if (rowErr.message.includes('UNIQUE constraint failed')) {
                                 try {

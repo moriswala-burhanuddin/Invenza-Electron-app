@@ -3,6 +3,7 @@ import { dbAdapter } from '../../db-adapter';
 import { isElectron } from '../../electron-helper';
 import { generateId } from '../../utils';
 import { initialStores, initialUsers, initialCustomers } from '../initial-data';
+import { API_URL } from '../../config';
 
 export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
   currentUser: null,
@@ -73,6 +74,40 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
         const { access, refresh, user } = result.data;
 
         if (isElectron()) {
+          // CRITICAL: Push any pending local changes (e.g. deletions) to VPS BEFORE purging.
+          // Without this, soft-deleted records that weren't synced yet would be lost locally,
+          // and then re-downloaded as "active" from the VPS on the subsequent pull.
+          try {
+            console.log('[Auth] Flushing pending local changes to cloud before purge...');
+            const dirtyData = await window.electronAPI.getDirtyData() as {
+              totalCount: number;
+              deviceId: string;
+              payload: Record<string, any[]>;
+            } | null;
+            if (dirtyData && dirtyData.totalCount > 0) {
+              const pushResponse = await fetch(`${API_URL}/sync/push/`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${access}`,
+                },
+                body: JSON.stringify({
+                  deviceId: dirtyData.deviceId,
+                  payload: dirtyData.payload
+                })
+              });
+              if (pushResponse.ok) {
+                const pushResult = await pushResponse.json();
+                if (pushResult.synced_ids) {
+                  await window.electronAPI.markAsSynced(pushResult.synced_ids);
+                }
+                console.log('[Auth] Pre-purge push completed successfully.');
+              }
+            }
+          } catch (prePushErr) {
+            console.warn('[Auth] Pre-purge push failed (non-fatal):', prePushErr);
+          }
+
           console.log('[Auth] New cloud session detected. HARD PURGING local tenant data...');
           await window.electronAPI.clearTenantData(true);
         }
@@ -174,6 +209,37 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
 
   logout: async () => {
     if (isElectron()) {
+      // Push any pending changes (e.g. soft-deletes) to VPS before clearing local data
+      try {
+        const accessToken = get().accessToken;
+        if (accessToken && accessToken !== 'mock-local-token' && accessToken !== 'bypass-token-offline') {
+          const dirtyData = await window.electronAPI.getDirtyData() as {
+            totalCount: number;
+            deviceId: string;
+            payload: Record<string, any[]>;
+          } | null;
+          if (dirtyData && dirtyData.totalCount > 0) {
+            console.log(`[Auth] Flushing ${dirtyData.totalCount} pending changes before logout...`);
+            const pushResponse = await fetch(`${API_URL}/sync/push/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                deviceId: dirtyData.deviceId,
+                payload: dirtyData.payload
+              })
+            });
+            if (pushResponse.ok) {
+              console.log('[Auth] Pre-logout push completed successfully.');
+            }
+          }
+        }
+      } catch (prePushErr) {
+        console.warn('[Auth] Pre-logout push failed (non-fatal):', prePushErr);
+      }
+
       console.log('[Auth] Logging out. Clearing local tenant data...');
       await window.electronAPI.clearTenantData();
     }
