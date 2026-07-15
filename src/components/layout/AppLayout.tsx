@@ -55,7 +55,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <BottomNav />
-      <AIChat />
+      {/* <AIChat /> */}
 
       {/* Multi-Partner Watermarks */}
       <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2 opacity-30 pointer-events-none z-50 mix-blend-multiply">

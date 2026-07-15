@@ -29,7 +29,7 @@ const HRLayout = () => {
         { icon: FileText, label: "Leaves", path: "/hr/leaves" },
         { icon: CreditCard, label: "Payroll", path: "/hr/payroll" },
         { icon: BarChart2, label: "Performance", path: "/hr/performance" },
-        ...(hasFeature('HR Assistant') ? [{ icon: MessageSquare, label: "HR Assistant", path: "/hr/chat" }] : []),
+        ...(false && hasFeature('HR Assistant') ? [{ icon: MessageSquare, label: "HR Assistant", path: "/hr/chat" }] : []),
     ];
 
     const handleLogout = () => {

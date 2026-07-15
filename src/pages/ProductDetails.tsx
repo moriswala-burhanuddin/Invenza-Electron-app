@@ -212,9 +212,9 @@ export default function ProductDetails() {
                         <div className="bg-primary rounded-[2.5rem] p-10 text-white shadow-2xl shadow-black/20">
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Inventory Strategy</h3>
-                                <button onClick={handleMagicSuggest} disabled={isOptimizing} className="hover:scale-110 transition-all text-indigo-400">
+                                {/* <button onClick={handleMagicSuggest} disabled={isOptimizing} className="hover:scale-110 transition-all text-indigo-400">
                                     {isOptimizing ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <Sparkles className="w-4 h-4" />}
-                                </button>
+                                </button> */}
                             </div>
                             <div className="grid grid-cols-2 gap-8">
                                 <div>

@@ -2072,6 +2072,8 @@ addCol('users',         'is_superuser INTEGER DEFAULT 0');
 addCol('employees',     'is_deleted INTEGER DEFAULT 0');
 addCol('accounts',      'is_deleted INTEGER DEFAULT 0');
 addCol('stores',        'is_deleted INTEGER DEFAULT 0');
+addCol('users',         'deleted_at TEXT');
+addCol('employees',     'deleted_at TEXT');
 // --------------------------------------------------------
 // --------------------------------------------------------
 // --- AUTO-RESTORE DEVELOPER ACCOUNTS ---
@@ -3840,12 +3842,12 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), 0)
       if (user) {
         const newEmail = user.email && !user.email.startsWith('__DEL__') ? `__DEL__${user.email}` : user.email;
         const newUsername = user.username && !user.username.startsWith('__DEL__') ? `__DEL__${user.username}` : user.username;
-        db.prepare("UPDATE users SET email = ?, username = ?, is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(newEmail, newUsername, id);
+        db.prepare("UPDATE users SET email = ?, username = ?, is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(newEmail, newUsername, id);
       } else {
-        db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
+        db.prepare("UPDATE users SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
       }
       
-      db.prepare("UPDATE employees SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE user_id = ? AND is_deleted = 0").run(id);
+      db.prepare("UPDATE employees SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE user_id = ? AND is_deleted = 0").run(id);
     });
     transaction();
     return { success: true };

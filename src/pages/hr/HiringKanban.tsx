@@ -130,7 +130,7 @@ const HiringKanban = () => {
                                         value={resumeText}
                                         onChange={e => setResumeText(e.target.value)}
                                     />
-                                    {hasFeature('Recruitment AI') ? (
+                                    {false && hasFeature('Recruitment AI') ? (
                                         <Button onClick={handleParseResume} disabled={parsing || !resumeText} className="w-full h-14 rounded-2xl bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-200 gap-3">
                                             {parsing ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
                                             {parsing ? "Reading..." : "Read Resume with AI"}

@@ -76,7 +76,7 @@ export default function Analytics() {
                         <div className="absolute top-0 right-0 p-20 opacity-[0.03] pointer-events-none">
                             <Target className="w-96 h-96 text-white" />
                         </div>
-                        <InventoryForecast />
+                        {/* <InventoryForecast /> */}
                     </div>
                 )}
 

@@ -287,7 +287,7 @@ export default function NewProduct() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Name *</label>
-                  {hasFeature('Reorder Optimization') && (
+                  {false && hasFeature('Reorder Optimization') && (
                     <button
                       type="button"
                       onClick={handleAiSuggest}

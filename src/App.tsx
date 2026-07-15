@@ -225,7 +225,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <LicenseGate>
-              <AIChatSidebar />
+              {/* <AIChatSidebar /> */}
               <UpdateNotification />
               <HashRouter>
             <Routes>

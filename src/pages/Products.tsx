@@ -335,7 +335,7 @@ export default function Products() {
             </Dialog>
             )}
 
-            {hasFeature('Reorder Optimization') && canEditProduct && (
+            {false && hasFeature('Reorder Optimization') && canEditProduct && (
               <button onClick={runOptimization} disabled={isOptimizing} className="flex items-center gap-2 bg-indigo-600 text-white border-none shadow-lg shadow-indigo-200 px-5 py-3 rounded-[1.2rem] font-black text-[10px] tracking-widest hover:bg-indigo-700 transition-all active:scale-95 whitespace-nowrap">
                 {isOptimizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 AI OPTIMIZE

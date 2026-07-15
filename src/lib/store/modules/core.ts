@@ -174,7 +174,9 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
     }
 
     const localUsers = get().users;
-    const localUser = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const localUser = localUsers.find(u => 
+      u.email.toLowerCase() === email.toLowerCase() && !(u as any).isDeleted && !(u as any).is_deleted
+    );
 
     if (localUser) {
       let isValid = false;

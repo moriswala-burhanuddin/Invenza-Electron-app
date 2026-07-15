@@ -113,7 +113,7 @@ const ShiftScheduler = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                    {hasFeature('HR & Performance AI') ? (
+                    {false && hasFeature('HR & Performance AI') ? (
                         <Button onClick={handleSmartSchedule} disabled={analyzing} className="h-14 px-8 rounded-2xl bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-200 hover:scale-[1.02] active:scale-[0.98] transition-all gap-3">
                             <Sparkles className={cn("w-4 h-4", analyzing && "animate-pulse")} />
                             {analyzing ? "Setting up..." : "Smart Schedule"}

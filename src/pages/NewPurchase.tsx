@@ -236,7 +236,7 @@ export default function NewPurchase() {
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">Who did you buy from?</p>
                     </div>
                   </div>
-                  {hasFeature('Invoice OCR') && (
+                  {false && hasFeature('Invoice OCR') && (
                     <Button
                       onClick={handleScanReceipt}
                       disabled={isOcrLoading}

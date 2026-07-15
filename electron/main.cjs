@@ -6,6 +6,11 @@ const { autoUpdater } = require('electron-updater')
 const log = require('electron-log')
 const bwipjs = require('bwip-js')
 
+// Separate userData for production vs development to avoid sharing test data
+if (app.isPackaged) {
+    app.setPath('userData', path.join(app.getPath('appData'), 'Invenza-ERP-Production'));
+}
+
 // Configure logging
 autoUpdater.logger = log
 autoUpdater.logger.transports.file.level = 'info'

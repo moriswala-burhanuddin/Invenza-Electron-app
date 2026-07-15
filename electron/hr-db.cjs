@@ -520,12 +520,12 @@ module.exports = (db, toCamelCase, deviceId) => {
           if (user) {
             const newEmail = user.email && !user.email.startsWith('__DEL__') ? `__DEL__${user.email}` : user.email;
             const newUsername = user.username && !user.username.startsWith('__DEL__') ? `__DEL__${user.username}` : user.username;
-            db.prepare("UPDATE users SET email = ?, username = ?, is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(newEmail, newUsername, emp.user_id);
+            db.prepare("UPDATE users SET email = ?, username = ?, is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(newEmail, newUsername, emp.user_id);
           } else {
-            db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(emp.user_id);
+            db.prepare("UPDATE users SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(emp.user_id);
           }
         }
-        db.prepare("UPDATE employees SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
+        db.prepare("UPDATE employees SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
       });
       transaction();
       return { success: true };
