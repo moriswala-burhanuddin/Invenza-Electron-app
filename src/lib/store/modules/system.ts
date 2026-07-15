@@ -210,15 +210,15 @@ export const createSystemSlice: StoreSlice<SystemState> = (set, get) => ({
       }
 
       console.log('[SYNC] Starting Pull stage...');
-      const lastSync = await window.electronAPI.getLastPullTimestamp() || '2000-01-01T00:00:00.000Z';
-      console.log('[SYNC] Pulling updates since:', lastSync);
+      const lastSync = await window.electronAPI.getLastPullTimestamp();
+      console.log('[SYNC] Pulling updates since:', lastSync || 'FULL SYNC (no timestamp)');
 
       const pullResponse = await authenticatedFetch(`${API_URL}/sync/pull/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           store_id: activeStoreId,
-          last_sync: lastSync
+          last_sync: lastSync || null  // Send null for full sync so backend skips deleted records
         }),
       });
 

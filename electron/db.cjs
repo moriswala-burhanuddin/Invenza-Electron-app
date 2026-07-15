@@ -832,6 +832,10 @@ try {
           console.log(`[DB] Safe Repair: Adding missing company_id to ${table}...`);
           db.exec(`ALTER TABLE ${table} ADD COLUMN company_id TEXT`);
         }
+        if (!cols.includes('deleted_at')) {
+          console.log(`[DB] Safe Repair: Adding missing deleted_at to ${table}...`);
+          db.exec(`ALTER TABLE ${table} ADD COLUMN deleted_at TEXT`);
+        }
 
         // b. Specific Column Repairs
         if (table === 'sales' && !cols.includes('quotation_id')) {
@@ -2908,7 +2912,7 @@ const dbHelpers = {
     }
     if (!company) company = 'showtime';
     
-    let sql = "SELECT * FROM custom_fields WHERE (company_id = ? OR company_id IS NULL OR company_id = '') AND is_deleted = 0";
+    let sql = "SELECT * FROM custom_fields WHERE (company_id = ? OR company_id IS NULL OR company_id = '') AND is_deleted = 0 AND label NOT LIKE '__DEL__%'";
     const params = [company];
     if (targetType) {
       sql += ' AND target_type = ?';
@@ -3014,8 +3018,8 @@ const dbHelpers = {
 
     db.prepare(`
       UPDATE custom_fields 
-      SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, device_id = ?
-      WHERE id = ?
+      SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, device_id = ?, label = '__DEL__' || label
+      WHERE id = ? AND label NOT LIKE '__DEL__%'
     `).run(deviceId, id);
     return { success: true };
   },
@@ -3311,7 +3315,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
 
   getAllSales: (companyId, storeId) => {
     const effectiveStoreId = storeRedirects.get(storeId) || storeId;
-    const sales = db.prepare('SELECT * FROM sales WHERE store_id = ? AND is_deleted = 0 ORDER BY date DESC').all(effectiveStoreId)
+    const sales = db.prepare(`SELECT * FROM sales WHERE store_id = ? AND is_deleted = 0 AND invoice_number NOT LIKE '__DEL__%' ORDER BY date DESC`).all(effectiveStoreId)
     return sales.map(sale => {
       const camelSale = toCamelCase(sale)
       let items = [];
@@ -3831,7 +3835,16 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), 0)
 
   deleteUser: (id) => {
     const transaction = db.transaction(() => {
-      db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
+      // Prepend __DEL__ to avoid unique constraint conflicts in Django on email/username
+      const user = db.prepare('SELECT email, username FROM users WHERE id = ?').get(id);
+      if (user) {
+        const newEmail = user.email && !user.email.startsWith('__DEL__') ? `__DEL__${user.email}` : user.email;
+        const newUsername = user.username && !user.username.startsWith('__DEL__') ? `__DEL__${user.username}` : user.username;
+        db.prepare("UPDATE users SET email = ?, username = ?, is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(newEmail, newUsername, id);
+      } else {
+        db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
+      }
+      
       db.prepare("UPDATE employees SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE user_id = ? AND is_deleted = 0").run(id);
     });
     transaction();
@@ -4479,10 +4492,6 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   },
 
 
-  deleteUser: (id) => {
-    return db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id)
-  },
-
   clearLocalData: (storeId) => {
     // 0. Disable foreign keys for the purge
     db.pragma('foreign_keys = OFF');
@@ -4570,17 +4579,18 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   },
 
   deleteSale: (id) => {
-    // Soft-delete: mark as deleted and mark dirty for sync
-    return db.prepare(`UPDATE sales SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?`).run(id);
+    // Soft-delete: mark as deleted, mark dirty for sync, and rename invoice_number to __DEL__ prefix 
+    // to survive remote backend sync limitations where is_deleted is not sent back during pulls.
+    return db.prepare(`UPDATE sales SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now'), status = 'suspended', invoice_number = '__DEL__' || invoice_number WHERE id = ? AND invoice_number NOT LIKE '__DEL__%'`).run(id);
   },
 
   deletePurchase: (id) => {
-    // Soft-delete: mark as deleted and mark dirty for sync
-    return db.prepare(`UPDATE purchases SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?`).run(id);
+    // Soft-delete: mark as deleted and rename invoice_number to survive cloud sync
+    return db.prepare(`UPDATE purchases SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now'), invoice_number = '__DEL__' || invoice_number WHERE id = ? AND invoice_number NOT LIKE '__DEL__%'`).run(id);
   },
 
   deleteQuotation: (id) => {
-    return db.prepare(`UPDATE quotations SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?`).run(id);
+    return db.prepare(`UPDATE quotations SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now'), status = 'cancelled', quotation_number = '__DEL__' || quotation_number WHERE id = ? AND quotation_number NOT LIKE '__DEL__%'`).run(id);
   },
   restoreQuotation: (id) => {
     return db.prepare(`UPDATE quotations SET is_deleted = 0, sync_status = 0, updated_at = datetime('now') WHERE id = ?`).run(id);
@@ -4596,7 +4606,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   },
 
   deleteTransaction: (id) => {
-    return db.prepare(`UPDATE transactions SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?`).run(id);
+    return db.prepare(`UPDATE transactions SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?`).run(id);
   },
 
   runQuery: (query, params = []) => {
@@ -4606,7 +4616,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
 
 
   getAllCategories: (companyId, storeId) => {
-    const categories = db.prepare('SELECT * FROM categories WHERE company_id = ? AND store_id = ? AND is_deleted = 0 ORDER BY name ASC').all(companyId, storeId)
+    const categories = db.prepare("SELECT * FROM categories WHERE company_id = ? AND store_id = ? AND is_deleted = 0 AND name NOT LIKE '__DEL__%' ORDER BY name ASC").all(companyId, storeId)
     return categories.map(toCamelCase)
   },
   
@@ -4661,7 +4671,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     try {
       const transaction = db.transaction(() => {
         // 1. Soft Delete the Category
-        db.prepare("UPDATE categories SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id)
+        db.prepare("UPDATE categories SET is_deleted = 1, deleted_at = datetime('now'), sync_status = 0, updated_at = datetime('now'), name = '__DEL__' || name WHERE id = ? AND name NOT LIKE '__DEL__%'").run(id)
         
         // 2. SET_NULL for Products (Orphan Protection)
         db.prepare("UPDATE products SET categoryId = NULL, sync_status = 0, updated_at = datetime('now') WHERE categoryId = ?").run(id)
@@ -4732,7 +4742,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
   },
   getAllQuotations: (companyId, storeId) => {
     // Relax companyId locally, default to all non-deleted
-    let query = 'SELECT * FROM quotations WHERE is_deleted = 0';
+    let query = `SELECT * FROM quotations WHERE is_deleted = 0 AND quotation_number NOT LIKE '__DEL__%'`;
     let params = [];
     
     const effectiveStoreId = storeRedirects.get(storeId) || storeId;
@@ -4753,7 +4763,7 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
   },
   getAllPurchases: (companyId, storeId) => {
     const effectiveStoreId = storeRedirects.get(storeId) || storeId;
-    const purchases = db.prepare('SELECT * FROM purchases WHERE store_id = ? AND is_deleted = 0 ORDER BY date DESC').all(effectiveStoreId)
+    const purchases = db.prepare(`SELECT * FROM purchases WHERE store_id = ? AND is_deleted = 0 AND invoice_number NOT LIKE '__DEL__%' ORDER BY date DESC`).all(effectiveStoreId)
     return purchases.map(p => {
       const camelP = toCamelCase(p)
       let pItems = [];
@@ -4924,15 +4934,6 @@ VALUES(?, ?, ?, ?, ?, ?, ?, datetime('now'))
 
   deleteAccount: (id) => {
     return db.prepare("UPDATE accounts SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id)
-  },
-
-  deleteEmployee: (id) => {
-    // Soft delete the employee and deactivate the linked user account
-    const emp = db.prepare('SELECT user_id FROM employees WHERE id = ?').get(id)
-    if (emp && emp.user_id) {
-      db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(emp.user_id)
-    }
-    return db.prepare("UPDATE employees SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id)
   },
 
   deleteShift: (id) => {
@@ -5982,9 +5983,9 @@ SELECT
 
           let result;
           if (hasSyncStatus && !forceHardPurge) {
-            // Only delete records that are already synced (protect pending work)
-            result = db.prepare(`DELETE FROM ${table} WHERE sync_status = 1`).run();
-            console.log(`[DB] Purged synced data from ${table} (${result.changes} rows cleared)`);
+            // Delete ALL records: synced AND unsynced (orphaned pending changes can't be pushed after logout)
+            result = db.prepare(`DELETE FROM ${table}`).run();
+            console.log(`[DB] Purged ALL data from ${table} (${result.changes} rows cleared)`);
           } else {
             // Hard purge: wipe the whole table regardless of sync status
             result = db.prepare(`DELETE FROM ${table}`).run();

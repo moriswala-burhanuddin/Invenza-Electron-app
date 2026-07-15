@@ -1,168 +1,154 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import { RefreshCw, Download, CheckCircle, X, ArrowRight, ServerCrash } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface UpdateInfo {
-    version: string
+    version: string;
 }
 
 interface DownloadProgress {
-    percent: number
+    percent: number;
 }
 
-type UpdateState = 'idle' | 'available' | 'downloading' | 'ready'
+type UpdateState = 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error';
 
 interface ElectronUpdaterAPI {
-    onUpdateAvailable?: (cb: (info: UpdateInfo) => void) => void
-    onDownloadProgress?: (cb: (info: DownloadProgress) => void) => void
-    onUpdateDownloaded?: (cb: (info: UpdateInfo) => void) => void
-    onUpdaterError?: (cb: (info: { message: string }) => void) => void
-    checkForUpdates?: () => Promise<{ success: boolean, info?: unknown, error?: string }>
-    installUpdate?: () => void
+    onUpdateAvailable?: (cb: (info: UpdateInfo) => void) => void;
+    onDownloadProgress?: (cb: (info: DownloadProgress) => void) => void;
+    onUpdateDownloaded?: (cb: (info: UpdateInfo) => void) => void;
+    onUpdaterError?: (cb: (info: { message: string }) => void) => void;
+    checkForUpdates?: () => Promise<{ success: boolean; info?: unknown; error?: string }>;
+    installUpdate?: () => void;
 }
 
 function getAPI(): ElectronUpdaterAPI | null {
-    return (window as Window & { electronAPI?: ElectronUpdaterAPI }).electronAPI ?? null
+    return (window as Window & { electronAPI?: ElectronUpdaterAPI }).electronAPI ?? null;
 }
 
 export function UpdateNotification() {
-    const [state, setState] = useState<UpdateState>('idle')
-    const [version, setVersion] = useState('')
-    const [percent, setPercent] = useState(0)
+    const [state, setState] = useState<UpdateState>('idle');
+    const [version, setVersion] = useState('');
+    const [percent, setPercent] = useState(0);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        const api = getAPI()
-        if (!api) {
-            console.log('[UpdateNotification] No Electron API found.')
-            return
-        }
-
-        console.log('[UpdateNotification] Initializing listeners...')
+        const api = getAPI();
+        if (!api) return;
 
         api.onUpdateAvailable?.((info: UpdateInfo) => {
-            console.log('[UpdateNotification] Update available:', info.version)
-            setVersion(info.version)
-            setState('available')
-        })
+            setVersion(info.version);
+            setState('available');
+            setVisible(true);
+        });
 
         api.onDownloadProgress?.((info: DownloadProgress) => {
-            setPercent(info.percent)
-            setState('downloading')
-        })
+            setPercent(info.percent);
+            setState('downloading');
+            setVisible(true);
+        });
 
         api.onUpdateDownloaded?.((info: UpdateInfo) => {
-            console.log('[UpdateNotification] Update ready to install.')
-            setVersion(info.version)
-            setState('ready')
-        })
+            setVersion(info.version);
+            setState('ready');
+            setVisible(true);
+        });
 
         api.onUpdaterError?.((info: { message: string }) => {
-            console.error('[UpdateNotification] Updater error:', info.message)
-        })
-    }, [])
-
-    if (state === 'idle') return null
+            setErrorMsg(info.message);
+            setState('error');
+            setVisible(true);
+            
+            // Auto hide error after 5s
+            setTimeout(() => {
+                setVisible(false);
+                setTimeout(() => setState('idle'), 300);
+            }, 5000);
+        });
+    }, []);
 
     const handleInstall = () => {
-        getAPI()?.installUpdate?.()
-    }
+        getAPI()?.installUpdate?.();
+    };
+
+    if (!visible) return null;
 
     return (
-        <div
-            style={{
-                position: 'fixed',
-                bottom: '24px',
-                right: '24px',
-                zIndex: 9999,
-                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                border: '1px solid rgba(99,102,241,0.4)',
-                borderRadius: '12px',
-                padding: '16px 20px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                minWidth: '300px',
-                color: '#e2e8f0',
-                fontFamily: 'inherit',
-            }}
-        >
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '20px' }}>🔄</span>
-                <div>
-                    {state === 'available' && (
-                        <>
-                            <p style={{ margin: 0, fontWeight: 600, fontSize: '14px' }}>
-                                Update Available — v{version}
-                            </p>
-                            <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
-                                Downloading in background…
-                            </p>
-                        </>
-                    )}
-                    {state === 'downloading' && (
-                        <>
-                            <p style={{ margin: 0, fontWeight: 600, fontSize: '14px' }}>
-                                Downloading Update — v{version}
-                            </p>
-                            <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
-                                {percent}% complete
-                            </p>
-                        </>
-                    )}
-                    {state === 'ready' && (
-                        <>
-                            <p style={{ margin: 0, fontWeight: 600, fontSize: '14px' }}>
-                                Update Ready — v{version}
-                            </p>
-                            <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
-                                Restart to apply the update
-                            </p>
-                        </>
-                    )}
+        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 min-w-[340px] max-w-[400px] animate-in slide-in-from-bottom-5 fade-in duration-300">
+            <div className="bg-slate-900/90 backdrop-blur-xl border border-indigo-500/30 rounded-2xl p-5 shadow-2xl shadow-indigo-500/10 text-white relative overflow-hidden group">
+                
+                {/* Background glow */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent opacity-50" />
+                
+                {/* Close Button (only show if not downloading/ready to prevent blocking install) */}
+                {state !== 'downloading' && state !== 'ready' && (
+                    <button 
+                        onClick={() => setVisible(false)}
+                        className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                )}
+
+                <div className="relative z-10 flex items-start gap-4">
+                    <div className={cn(
+                        "p-3 rounded-xl flex-shrink-0 border",
+                        state === 'error' ? "bg-red-500/20 border-red-500/30 text-red-400" :
+                        state === 'ready' ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" :
+                        "bg-indigo-500/20 border-indigo-500/30 text-indigo-400"
+                    )}>
+                        {state === 'error' ? <ServerCrash className="w-6 h-6" /> :
+                         state === 'ready' ? <CheckCircle className="w-6 h-6" /> :
+                         state === 'downloading' ? <Download className="w-6 h-6 animate-bounce" /> :
+                         <RefreshCw className="w-6 h-6 animate-spin" />}
+                    </div>
+
+                    <div className="flex-1 pt-1">
+                        {state === 'available' && (
+                            <>
+                                <h3 className="text-[15px] font-bold text-white mb-1 tracking-tight">Update Available</h3>
+                                <p className="text-xs text-indigo-200/70 font-medium">Version {version} is downloading in the background...</p>
+                            </>
+                        )}
+                        
+                        {state === 'downloading' && (
+                            <>
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-[15px] font-bold text-white tracking-tight">Downloading Update</h3>
+                                    <span className="text-xs font-black text-indigo-400">{Math.floor(percent)}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full transition-all duration-300 ease-out"
+                                        style={{ width: `${percent}%` }}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {state === 'ready' && (
+                            <>
+                                <h3 className="text-[15px] font-bold text-white mb-1 tracking-tight">Update Ready to Install</h3>
+                                <p className="text-xs text-emerald-200/70 font-medium mb-4">Version {version} has been downloaded.</p>
+                                <Button 
+                                    onClick={handleInstall}
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold border-none shadow-lg shadow-emerald-500/20 h-9"
+                                >
+                                    Restart App Now <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                            </>
+                        )}
+
+                        {state === 'error' && (
+                            <>
+                                <h3 className="text-[15px] font-bold text-white mb-1 tracking-tight">Update Failed</h3>
+                                <p className="text-xs text-red-200/70 font-medium line-clamp-2">{errorMsg}</p>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* Progress bar */}
-            {state === 'downloading' && (
-                <div
-                    style={{
-                        height: '4px',
-                        background: 'rgba(255,255,255,0.1)',
-                        borderRadius: '2px',
-                        overflow: 'hidden',
-                    }}
-                >
-                    <div
-                        style={{
-                            height: '100%',
-                            width: `${percent}%`,
-                            background: 'linear-gradient(90deg, #6366f1, #818cf8)',
-                            borderRadius: '2px',
-                            transition: 'width 0.3s ease',
-                        }}
-                    />
-                </div>
-            )}
-
-            {/* Action button */}
-            {state === 'ready' && (
-                <button
-                    onClick={handleInstall}
-                    style={{
-                        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '8px 16px',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        width: '100%',
-                    }}
-                >
-                    Restart &amp; Update
-                </button>
-            )}
         </div>
-    )
+    );
 }

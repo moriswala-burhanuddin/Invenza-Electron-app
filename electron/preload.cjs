@@ -238,7 +238,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getDeviceId: () => ipcRenderer.invoke('system:getDeviceId'),
     getLicenseKey: () => ipcRenderer.invoke('system:getLicenseKey'),
     saveLicenseKey: (key) => ipcRenderer.invoke('system:saveLicenseKey', key),
-
+    getSetting: (key) => ipcRenderer.invoke('system:getSetting', key),
+    setSetting: (key, value) => ipcRenderer.invoke('system:setSetting', key, value),
     getPayroll: (storeId, companyId, employeeId) => ipcRenderer.invoke('db:getPayroll', storeId, companyId, employeeId),
     addPayroll: (payroll) => ipcRenderer.invoke('db:addPayroll', payroll),
     updatePayrollStatus: (id, status) => ipcRenderer.invoke('db:updatePayrollStatus', id, status),

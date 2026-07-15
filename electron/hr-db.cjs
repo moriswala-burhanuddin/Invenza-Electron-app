@@ -376,7 +376,10 @@ module.exports = (db, toCamelCase, deviceId) => {
           existingUser = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
         }
         if (!existingUser && data.email) {
-          existingUser = db.prepare("SELECT * FROM users WHERE email = ?").get(data.email);
+          existingUser = db.prepare("SELECT * FROM users WHERE email = ? AND is_deleted = 0").get(data.email);
+          if (existingUser && existingUser.id !== data.userId) {
+             throw new Error("UNIQUE constraint failed: users.email");
+          }
           if (existingUser) userId = existingUser.id;
         }
 
@@ -512,7 +515,15 @@ module.exports = (db, toCamelCase, deviceId) => {
       const transaction = db.transaction(() => {
         const emp = db.prepare('SELECT user_id FROM employees WHERE id = ?').get(id);
         if (emp && emp.user_id) {
-          db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(emp.user_id);
+          // Prepend __DEL__ to avoid unique constraint conflicts in Django on email/username
+          const user = db.prepare('SELECT email, username FROM users WHERE id = ?').get(emp.user_id);
+          if (user) {
+            const newEmail = user.email && !user.email.startsWith('__DEL__') ? `__DEL__${user.email}` : user.email;
+            const newUsername = user.username && !user.username.startsWith('__DEL__') ? `__DEL__${user.username}` : user.username;
+            db.prepare("UPDATE users SET email = ?, username = ?, is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(newEmail, newUsername, emp.user_id);
+          } else {
+            db.prepare("UPDATE users SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(emp.user_id);
+          }
         }
         db.prepare("UPDATE employees SET is_deleted = 1, sync_status = 0, updated_at = datetime('now') WHERE id = ?").run(id);
       });

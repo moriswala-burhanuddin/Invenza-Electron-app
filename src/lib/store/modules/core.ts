@@ -133,6 +133,7 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
            employeeId = user.employee_profile.id;
         }
 
+        const rawCompanyId = user.company_id || user.companyId;
         const mappedUser: User = {
           id: user.id || user.uid || `user-${Date.now()}`,
           name: user.name || user.firstName || 'User',
@@ -140,7 +141,7 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
           phone: user.phone || '',
           role: normalizedRole,
           storeId: user.store_id || user.storeId || 'store-1',
-          companyId: user.company_id || user.companyId,
+          companyId: rawCompanyId ? String(rawCompanyId).split('.')[0] : undefined,
           avatar: user.avatar || user.profilePicture || null,
           employeeId: employeeId
         };
@@ -237,11 +238,11 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
           }
         }
       } catch (prePushErr) {
-        console.warn('[Auth] Pre-logout push failed (non-fatal):', prePushErr);
+        console.warn('[Auth] Pre-logout push failed. Force-purging to prevent ghost records:', prePushErr);
       }
 
-      console.log('[Auth] Logging out. Clearing local tenant data...');
-      await window.electronAPI.clearTenantData();
+      console.log('[Auth] Logging out. FORCE clearing ALL local tenant data...');
+      await window.electronAPI.clearTenantData(true);  // Always hard-purge on logout to prevent deleted records from reappearing
     }
     set({ currentUser: null, isAuthenticated: false, accessToken: null, refreshToken: null });
   },
@@ -250,6 +251,9 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
     set({ activeStoreId: storeId });
     if (storeId) {
         localStorage.setItem('invenza_active_store', storeId);
+        if (typeof window !== 'undefined' && window.electronAPI) {
+            await window.electronAPI.setSetting('system_active_store', storeId);
+        }
         // FORCE RELOAD of all data slices from database for the new store context
         await get().loadFromDatabase();
     }
@@ -269,7 +273,7 @@ export const createCoreSlice: StoreSlice<CoreState> = (set, get) => ({
       }
     }
     if (!companyId) {
-      companyId = 1;
+      companyId = '1';
     }
     
     const newStore = {

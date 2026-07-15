@@ -43,3 +43,6 @@ bugs.md
 invenza-website/
 gunicorn.md
 vps.md
+check_all.cjs
+check_correct.cjs
+check.cjs

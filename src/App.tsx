@@ -168,10 +168,27 @@ const App = () => {
   const activeStore = useERPStore(state => state.activeStoreId);
   const updateStoreConfig = useStoreConfig(state => state.updateConfig);
 
+  const setActiveStore = useERPStore(state => state.setActiveStore);
+
   // Load data from Electron database on app startup
   useEffect(() => {
-    loadFromDatabase();
-  }, [loadFromDatabase]);
+    const restoreAndLoad = async () => {
+      // If localStorage lost the active store due to Chromium issues, restore from SQLite
+      if (window.electronAPI) {
+        try {
+          const sysStore = await window.electronAPI.getSetting('system_active_store');
+          const localStore = localStorage.getItem('invenza_active_store');
+          if (sysStore && sysStore !== localStore) {
+            await setActiveStore(sysStore);
+          }
+        } catch (e) {
+          console.warn("Failed to restore system store context", e);
+        }
+      }
+      loadFromDatabase();
+    };
+    restoreAndLoad();
+  }, [loadFromDatabase, setActiveStore]);
 
   // Load Store Configuration from DB when active store changes or on mount
   useEffect(() => {

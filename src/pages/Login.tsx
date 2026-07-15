@@ -24,36 +24,77 @@ export default function Login() {
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [pendingCredentials, setPendingCredentials] = useState<{email: string, password: string} | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<{status: 'checking'|'available'|'downloading'|'downloaded'|'error', version?: string, percent?: number, message?: string} | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('invenza_saved_accounts');
-    if (saved) {
-      try {
-        setSavedAccounts(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse saved accounts");
-      }
+    let mounted = true;
+    if (window.electronAPI) {
+      window.electronAPI.onUpdateAvailable((info: any) => mounted && setUpdateInfo({ status: 'available', version: info?.version }));
+      window.electronAPI.onDownloadProgress((info: any) => mounted && setUpdateInfo({ status: 'downloading', percent: info?.percent }));
+      window.electronAPI.onUpdateDownloaded((info: any) => mounted && setUpdateInfo({ status: 'downloaded', version: info?.version }));
+      window.electronAPI.onUpdaterError((info: any) => mounted && setUpdateInfo({ status: 'error', message: info?.message }));
+      
+      // Auto-trigger a check when login page loads if we are in Electron
+      window.electronAPI.checkForUpdates().catch(console.error);
     }
+    return () => { mounted = false; };
   }, []);
 
-  const savePendingAccount = () => {
+  useEffect(() => {
+    const loadSavedAccounts = async () => {
+      let saved = null;
+      if (window.electronAPI) {
+        try {
+          saved = await window.electronAPI.getSetting('system_saved_accounts');
+        } catch (e) {
+          console.error("Failed to load saved accounts from SQLite", e);
+        }
+      }
+      if (!saved) {
+        saved = localStorage.getItem('invenza_saved_accounts');
+      }
+      
+      if (saved) {
+        try {
+          setSavedAccounts(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse saved accounts");
+        }
+      }
+    };
+    loadSavedAccounts();
+  }, []);
+
+  const persistAccounts = async (accounts: SavedAccount[]) => {
+    const jsonStr = JSON.stringify(accounts);
+    if (window.electronAPI) {
+      try {
+        await window.electronAPI.setSetting('system_saved_accounts', jsonStr);
+      } catch (e) {
+        console.error("Failed to save accounts to SQLite", e);
+      }
+    }
+    localStorage.setItem('invenza_saved_accounts', jsonStr);
+  };
+
+  const savePendingAccount = async () => {
     if (pendingCredentials) {
       const exists = savedAccounts.find(a => a.email.toLowerCase() === pendingCredentials.email.toLowerCase());
       if (!exists) {
         const updated = [...savedAccounts, pendingCredentials];
         setSavedAccounts(updated);
-        localStorage.setItem('invenza_saved_accounts', JSON.stringify(updated));
+        await persistAccounts(updated);
       }
       setShowSavePrompt(false);
       proceedToDashboard();
     }
   };
 
-  const deleteAccount = (e: React.MouseEvent, emailToDelete: string) => {
+  const deleteAccount = async (e: React.MouseEvent, emailToDelete: string) => {
     e.stopPropagation();
     const updated = savedAccounts.filter(a => a.email !== emailToDelete);
     setSavedAccounts(updated);
-    localStorage.setItem('invenza_saved_accounts', JSON.stringify(updated));
+    await persistAccounts(updated);
   };
 
   const selectAccount = (acc: SavedAccount) => {
@@ -144,6 +185,29 @@ export default function Login() {
 
           {/* Subtle Scanning Line */}
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent animate-scan" />
+
+          {updateInfo && updateInfo.status !== 'checking' && (
+            <div className="mb-8 p-4 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 text-center">
+              {updateInfo.status === 'available' && <p className="text-sm font-semibold text-indigo-400">Update available (v{updateInfo.version}). Downloading...</p>}
+              {updateInfo.status === 'downloading' && (
+                <div className="flex flex-col gap-2 items-center">
+                  <p className="text-sm font-semibold text-indigo-400">Downloading update...</p>
+                  <div className="w-full bg-indigo-950 rounded-full h-1.5">
+                    <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${updateInfo.percent || 0}%` }} />
+                  </div>
+                </div>
+              )}
+              {updateInfo.status === 'downloaded' && (
+                <div className="flex flex-col gap-3 items-center">
+                  <p className="text-sm font-semibold text-emerald-400">Update v{updateInfo.version} downloaded!</p>
+                  <button onClick={() => window.electronAPI?.installUpdate()} className="px-4 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-full text-xs font-bold transition-colors">
+                    Restart to Install
+                  </button>
+                </div>
+              )}
+              {updateInfo.status === 'error' && <p className="text-sm font-semibold text-rose-400">Update failed: {updateInfo.message}</p>}
+            </div>
+          )}
 
           {/* Header Section */}
           <div className="flex flex-col items-center mb-10 text-center">
@@ -297,6 +361,12 @@ export default function Login() {
                 <span className="text-[10px] font-black text-white">ENCRYPTED</span>
               </div>
             </div>
+            {window.electronAPI && (
+              <div className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.electronAPI?.checkForUpdates?.()}>
+                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">System Version</span>
+                <span className="text-[10px] font-black text-indigo-400">CHECK FOR UPDATES</span>
+              </div>
+            )}
             <div className="flex flex-col items-end">
               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Session ID</span>
               <span className="text-[10px] font-black text-white">SF-CORE-992</span>
@@ -305,7 +375,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mt-12 leading-relaxed">
-          Authorized Users Only • Encryption System Active
+          Authorized Users Only &nbsp;&nbsp;|&nbsp;&nbsp; Encryption System Active
         </p>
       </div>
 

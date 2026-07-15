@@ -267,6 +267,9 @@ export interface ElectronAPI {
     getPermissions: (userId: string) => Promise<UserPermission | null>;
     updatePermissions: (userId: string, permissions: PermissionSet) => Promise<UserPermission | null>;
     clearTenantData: (forceHardPurge?: boolean) => Promise<{ success: boolean; error?: string }>;
+    getSetting: (key: string) => Promise<string | null>;
+    setSetting: (key: string, value: string) => Promise<boolean>;
+    checkForUpdates: () => Promise<{ success: boolean, info?: unknown, error?: string }>;
 }
 
 declare global {

@@ -44,6 +44,14 @@ ipcMain.handle('system:saveLicenseKey', async (event, key) => {
     return dbHelpers.setSetting('license_key', key)
 })
 
+ipcMain.handle('system:getSetting', async (event, key) => {
+    return dbHelpers.getSetting(key)
+})
+
+ipcMain.handle('system:setSetting', async (event, key, value) => {
+    return dbHelpers.setSetting(key, value)
+})
+
 
 // Use the name from package.json (no hardcoded override)
 log.info('[MAIN] App Name:', app.name);
@@ -750,10 +758,51 @@ ipcMain.handle('db:getLastPullTimestamp', () => {
 ipcMain.handle('db:applyCloudUpdates', (event, { updates, serverTime }) => {
     try {
         const { syncEngine } = require('./sync-engine.cjs');
-        const { dbHelpers } = require('./db.cjs');
+        const { dbHelpers, db } = require('./db.cjs');
         const result = syncEngine.applyUpdates(updates);
         if (result.success) {
             dbHelpers.setSetting('last_pull_timestamp', serverTime);
+
+            // POST-PULL CLEANUP: Hard-delete any records marked as is_deleted=1
+            // This is a safety net — even if the server sends deleted records during a pull,
+            // or the UPSERT doesn't perfectly apply is_deleted, this ensures they are physically
+            // removed from local DB and will never reappear in queries.
+            const tablesToClean = [
+                'sales', 'purchases', 'quotations', 'transactions', 'products',
+                'customers', 'accounts', 'stores', 'users', 'categories',
+                'suppliers', 'tax_slabs', 'expense_categories', 'custom_fields', 'employees'
+            ];
+            for (const table of tablesToClean) {
+                try {
+                    const cols = db.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name);
+                    let deleteConditions = [];
+                    if (cols.includes('is_deleted')) {
+                        deleteConditions.push(`is_deleted = 1`);
+                    }
+                    if (cols.includes('invoice_number')) {
+                        deleteConditions.push(`invoice_number LIKE '__DEL__%'`);
+                    }
+                    if (cols.includes('quotation_number')) {
+                        deleteConditions.push(`quotation_number LIKE '__DEL__%'`);
+                    }
+                    if (cols.includes('name') && table === 'categories') {
+                        deleteConditions.push(`name LIKE '__DEL__%'`);
+                    }
+                    if (cols.includes('label') && table === 'custom_fields') {
+                        deleteConditions.push(`label LIKE '__DEL__%'`);
+                    }
+                    
+                    if (deleteConditions.length > 0) {
+                        const conditionStr = deleteConditions.join(' OR ');
+                        const purged = db.prepare(`DELETE FROM ${table} WHERE ${conditionStr}`).run();
+                        if (purged.changes > 0) {
+                            console.log(`[SyncCleanup] Purged ${purged.changes} soft-deleted records from ${table}`);
+                        }
+                    }
+                } catch (cleanErr) {
+                    // Non-fatal: table might not exist or have different schema
+                }
+            }
         }
         return result;
     } catch (err) {
@@ -1379,7 +1428,13 @@ function setupAutoUpdater() {
     autoUpdater.checkForUpdates().catch(err => {
         console.error('[Updater] Check failed:', err);
     });
-
+    
+    // Check every hour
+    setInterval(() => {
+        autoUpdater.checkForUpdates().catch(err => {
+            console.error('[Updater] Periodic check failed:', err);
+        });
+    }, 60 * 60 * 1000);
     // Update is available — notify renderer so it can show a banner
     autoUpdater.on('update-available', (info) => {
         console.log('[Updater] Update available:', info.version);
