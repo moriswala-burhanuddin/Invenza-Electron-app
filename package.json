@@ -1,7 +1,7 @@
 {
   "name": "invenza-saas-dev",
   "private": true,
-  "version": "1.0.20",
+  "version": "1.0.21",
   "type": "module",
   "description": "Invenza - SaaS Development Sandbox",
   "author": "Invenza Team",
