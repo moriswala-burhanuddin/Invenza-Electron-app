@@ -367,10 +367,10 @@ export default function Login() {
                 <span className="text-[10px] font-black text-indigo-400">CHECK FOR UPDATES</span>
               </div>
             )}
-            <div className="flex flex-col items-end">
+            {/* <div className="flex flex-col items-end">
               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Session ID</span>
               <span className="text-[10px] font-black text-white">SF-CORE-992</span>
-            </div>
+            </div> */}
           </div>
         </div>
 
