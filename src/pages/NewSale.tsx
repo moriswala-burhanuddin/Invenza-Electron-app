@@ -814,7 +814,7 @@ export default function NewSale() {
                         >
                           <option value="">SELECT GIFT CARD</option>
                           {giftCards
-                            .filter(gc => gc.isActive)
+                            .filter(gc => gc.isActive && gc.storeId === activeStoreId)
                             .sort((a, b) => (b.customerId === customerId ? 1 : 0) - (a.customerId === customerId ? 1 : 0))
                             .map(gc => (
                               <option key={gc.id} value={gc.id}>

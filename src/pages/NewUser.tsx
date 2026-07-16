@@ -369,7 +369,7 @@ export default function NewUser() {
                   >
                     {stores.map((s) => (
                       <option key={s.id} value={s.id} className="bg-slate-900">
-                        {s.name.toUpperCase()} - {s.branch.toUpperCase()}
+                        {s.name?.toUpperCase() || ''} {s.branch ? `- ${s.branch.toUpperCase()}` : ''}
                       </option>
                     ))}
                   </select>
