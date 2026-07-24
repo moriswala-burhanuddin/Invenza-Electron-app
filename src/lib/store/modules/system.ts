@@ -9,8 +9,17 @@ export const createSystemSlice: StoreSlice<SystemState> = (set, get) => ({
   isSyncing: false,
   syncError: null,
   testModeEnabled: false,
+  hasCompletedTour: false,
+  theme: 'system',
   activityLogs: [],
 
+  setTheme: (theme: 'light' | 'dark' | 'system') => {
+    set({ theme });
+    // Immediately apply to document for instant feedback
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+  },
+  completeTour: () => set({ hasCompletedTour: true }),
   toggleTestMode: () => set((state) => ({ testModeEnabled: !state.testModeEnabled })),
 
   addActivityLog: (log: { action: string; details: string }) => {

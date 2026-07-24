@@ -24,7 +24,8 @@ import {
     Shield,
     Store,
     Activity,
-    PackageSearch
+    PackageSearch,
+    ShieldCheck
 } from "lucide-react";
 
 export type Role = 'admin' | 'staff' | 'user' | 'hr_manager' | 'super_admin' | 'sales_manager' | 'inventory_manager' | 'accountant' | 'employee';
@@ -68,6 +69,7 @@ export const ROLE_SIDEBARS: Record<Role, NavItem[]> = {
         { title: "Store Config", href: "/store-config", icon: Settings },
         { title: "Access Control", href: "/access-control", icon: Shield },
         { title: "Sync Diagnostics", href: "/sync-diagnostics", icon: Activity },
+        { title: "Subscription", href: "/subscription", icon: ShieldCheck },
     ],
 
     // HR Manager

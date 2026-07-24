@@ -943,8 +943,12 @@ export interface SystemState {
   syncError: string | null;
   testModeEnabled: boolean;
   activityLogs: ActivityLog[];
+  hasCompletedTour: boolean;
+  theme: 'light' | 'dark' | 'system';
   
   // Actions
+  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  completeTour: () => void;
   toggleTestMode: () => void;
   addActivityLog: (log: Omit<ActivityLog, 'id' | 'timestamp' | 'userId' | 'userName' | 'storeId'>) => void;
   syncData: () => Promise<'success' | 'error' | 'already_syncing' | 'no_token' | 'not_electron' | 'bypass_mode'>;

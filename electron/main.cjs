@@ -67,32 +67,11 @@ log.info('[MAIN] App Version:', app.getVersion());
 const { db, dbHelpers, deviceId: dbDeviceId } = require('./db.cjs')
 const { askAI, getInventoryForecast, suggestProductCategory, processInvoiceOCR, optimizeReorderPoints } = require('./ai-service.cjs')
 
-// Cheques
-ipcMain.handle('db:getCheques', async (event, storeId, companyId) => {
-    return dbHelpers.getAllCheques(companyId, storeId)
-})
-
-ipcMain.handle('db:addCheque', async (event, cheque) => {
-    const result = dbHelpers.addCheque(cheque)
-    if (mainWindow) mainWindow.webContents.send('sync:trigger')
-    return result
-})
-
-ipcMain.handle('db:updateCheque', async (event, id, updates) => {
-    console.log(`[IPC] updateCheque called for ${id}`, updates)
-    const result = dbHelpers.updateCheque(id, updates)
-    if (mainWindow) mainWindow.webContents.send('sync:trigger')
-    return result
-})
-
-ipcMain.handle('db:deleteCheque', async (event, id) => {
-    const result = dbHelpers.deleteCheque(id)
-    if (mainWindow) mainWindow.webContents.send('sync:trigger')
-    return result
-})
-
 let mainWindow;
 let secondaryWindow;
+const getMainWindow = () => mainWindow;
+require('./ipc/cheques-ipc.cjs')(ipcMain, dbHelpers, getMainWindow);
+require('./ipc/customers-ipc.cjs')(ipcMain, dbHelpers, getMainWindow);
 
 console.log('[MAIN] App Name:', app.getName());
 console.log('[MAIN] UserData Path:', app.getPath('userData'));
@@ -277,28 +256,6 @@ ipcMain.handle('db:updateProductCustomValues', async (event, productId, values) 
     return result
 })
 
-// Customers
-ipcMain.handle('db:getCustomers', async (event, storeId, companyId) => {
-    return dbHelpers.getAllCustomers(companyId, storeId)
-})
-
-ipcMain.handle('db:addCustomer', async (event, customer) => {
-    const result = dbHelpers.addCustomer(customer)
-    if (mainWindow) mainWindow.webContents.send('sync:trigger')
-    return result
-})
-
-ipcMain.handle('db:updateCustomer', async (event, id, updates) => {
-    const result = dbHelpers.updateCustomer(id, updates)
-    if (mainWindow) mainWindow.webContents.send('sync:trigger')
-    return result
-})
-
-ipcMain.handle('db:deleteCustomer', async (event, id) => {
-    const result = dbHelpers.deleteCustomer(id)
-    if (mainWindow) mainWindow.webContents.send('sync:trigger')
-    return result
-})
 
 // Sales
 ipcMain.handle('db:getSales', async (event, storeId, companyId) => {

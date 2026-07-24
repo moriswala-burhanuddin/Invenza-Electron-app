@@ -89,6 +89,7 @@ import Notifications from "./pages/Notifications";
 import AccessControl from "./pages/AccessControl";
 import NotFound from "./pages/NotFound";
 import SyncDiagnostics from "./pages/SyncDiagnostics";
+import Subscription from "./pages/Subscription";
 
 import { useEffect } from "react";
 import { useERPStore } from "@/lib/store-data";
@@ -163,11 +164,18 @@ const LicenseGate = ({ children }: { children: ReactNode }) => {
 };
 
 const App = () => {
-  const loadFromDatabase = useERPStore(state => state.loadFromDatabase);
-  const syncData = useERPStore(state => state.syncData);
+  const theme = useERPStore(state => state.theme);
   const activeStore = useERPStore(state => state.activeStoreId);
   const updateStoreConfig = useStoreConfig(state => state.updateConfig);
+  
+  // Apply theme on mount and when theme changes
+  useEffect(() => {
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+  }, [theme]);
 
+  const loadFromDatabase = useERPStore(state => state.loadFromDatabase);
+  const syncData = useERPStore(state => state.syncData);
   const setActiveStore = useERPStore(state => state.setActiveStore);
 
   // Load data from Electron database on app startup
@@ -234,6 +242,7 @@ const App = () => {
 
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/subscription" element={<Subscription />} />
                 {/* ... other routes ... */}
                 <Route path="/sales" element={<Sales />} />
                 <Route path="/sales/new" element={<NewSale />} />

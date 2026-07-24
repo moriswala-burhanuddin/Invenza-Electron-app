@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useERPStore } from '@/lib/store-data';
+import { CursorCanvas } from '@/components/ui/CursorCanvas';
 import {
   Wallet,
   TrendingUp,
@@ -56,6 +58,7 @@ const DEMO_METRICS: DashboardMetrics = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
   const { getStoreCustomers, getActiveStore, checkPermission, currentUser } = useERPStore();
   const [dateRange, setDateRange] = useState('today');
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -113,18 +116,35 @@ export default function Dashboard() {
     { name: 'Sun', total: 3490, profit: 4300 },
   ];
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-20">
-      <PageHeader
-        title="Dashboard"
+    <div ref={containerRef} className="min-h-screen bg-transparent pb-20 relative overflow-hidden">
+      <CursorCanvas containerRef={containerRef} />
+      <div className="relative z-10">
+        <PageHeader
+          title="Dashboard"
         subtitle={activeStore ? `${activeStore.name} • Live Overview` : 'Quick Summary'}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
 
         {/* View Options */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-sm border border-white">
+        <div className="flex items-center justify-between mb-8 relative z-10">
+          <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-sm border border-white dark:border-slate-800">
             {['today', 'week', 'month', 'year'].map((range) => (
               <button
                 key={range}
@@ -139,16 +159,22 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <button className="flex items-center gap-2 bg-white p-4 rounded-[1.2rem] shadow-sm border border-white hover:shadow-md transition-all active:scale-95">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Custom Range</span>
+          <button className="flex items-center gap-2 bg-white dark:bg-slate-900 p-4 rounded-[1.2rem] shadow-sm border border-white dark:border-slate-800 hover:shadow-md transition-all active:scale-95">
+            <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest dark:text-slate-300">Custom Range</span>
           </button>
         </div>
 
         {/* Stats Widgets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 mb-10">
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 mb-10"
+        >
           {stats.map((stat, i) => (
-            <div key={stat.label} className="group bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+            <motion.div key={stat.label} variants={item}>
+            <div key={stat.label} className="group bg-card text-card-foreground rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden border border-slate-100 dark:border-slate-800">
               <div className={cn("absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-[0.03] group-hover:scale-150 transition-transform duration-700", stat.color)} />
 
               <div className="flex justify-between items-start mb-6">
@@ -165,14 +191,15 @@ export default function Dashboard() {
               </div>
 
               <div className="relative z-10">
-                <h2 className="text-3xl font-black text-slate-900 leading-none mb-1">
+                <h2 className="text-3xl font-black text-foreground leading-none mb-1">
                   {stat.isCurrency ? formatCurrency(stat.value || 0) : (stat.value || 0).toLocaleString()}
                 </h2>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Latest Update</p>
               </div>
             </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8 mb-10">
           {/* Main Analytical Card */}
@@ -384,6 +411,7 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

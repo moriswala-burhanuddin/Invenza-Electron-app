@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useERPStore } from '@/lib/store-data';
 import { Store, Eye, EyeOff, Lock, Mail, ShieldCheck, Sparkles, ArrowRight, Fingerprint, ShieldAlert, Cpu, X, UserCircle, Save, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '../assets/invenza-bg.png';
 import { Checkbox } from '@/components/ui/checkbox';
+import { motion } from 'framer-motion';
+import { CursorCanvas } from '@/components/ui/CursorCanvas';
 
 interface SavedAccount {
   email: string;
@@ -25,6 +27,8 @@ export default function Login() {
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [pendingCredentials, setPendingCredentials] = useState<{email: string, password: string} | null>(null);
   const [updateInfo, setUpdateInfo] = useState<{status: 'checking'|'available'|'downloading'|'downloaded'|'error', version?: string, percent?: number, message?: string} | null>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -169,12 +173,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0B] relative overflow-hidden font-sans">
-      {/* Background Synthesis */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/30 rounded-full blur-[160px] animate-pulse" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-emerald-500/30 rounded-full blur-[160px] animate-pulse delay-700" />
-      </div>
+    <div ref={containerRef} className="min-h-screen flex items-center justify-center bg-[#0A0A0B] relative overflow-hidden font-sans">
+      <CursorCanvas containerRef={containerRef} />
 
       {/* Grid Pattern */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
@@ -211,21 +211,33 @@ export default function Login() {
 
           {/* Header Section */}
           <div className="flex flex-col items-center mb-10 text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="mb-8"
+            >
+              <h2 className="text-2xl font-light text-white/90 tracking-wide">
+                Welcome to <span className="font-semibold text-[#0071E3]">Invenza</span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">Sign in to continue to your workspace</p>
+            </motion.div>
+
             <div className="relative mb-6 group">
-              <div className="absolute -inset-4 bg-indigo-500/20 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="w-20 h-20 rounded-[2.5rem] bg-gradient-to-br from-indigo-500 to-emerald-500 p-[1px] shadow-2xl shadow-indigo-500/20 transition-transform duration-700 group-hover:scale-105 group-hover:rotate-6">
+              <div className="absolute -inset-4 bg-[#0071E3]/20 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="w-20 h-20 rounded-[2.5rem] bg-gradient-to-br from-[#0071E3] to-[#00A1FF] p-[1px] shadow-2xl shadow-[#0071E3]/20 transition-transform duration-700 group-hover:scale-105 group-hover:rotate-6">
                 <div className="w-full h-full bg-[#0A0A0B] rounded-[2.4rem] flex items-center justify-center overflow-hidden">
                   <img src={logo} alt="Invenza Logo" className="w-[70%] h-[70%] object-contain" />
                 </div>
               </div>
-              <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg border-2 border-[#141417]">
+              <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-xl bg-[#00A1FF] flex items-center justify-center shadow-lg border-2 border-[#141417]">
                 <ShieldCheck className="w-4 h-4 text-white" />
               </div>
             </div>
 
-            <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Invenza<span className="text-indigo-500 text-4xl">.</span></h1>
+            <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Invenza<span className="text-[#0071E3] text-4xl">.</span></h1>
             <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 px-4 py-1.5 rounded-full">
-              <Cpu className="w-3 h-3 text-indigo-400" />
+              <Cpu className="w-3 h-3 text-[#0071E3]" />
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Neural Interface v3</span>
             </div>
           </div>

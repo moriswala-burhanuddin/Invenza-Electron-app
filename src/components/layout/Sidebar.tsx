@@ -28,7 +28,9 @@ import {
   ChevronLeft,
   ChevronRight,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useERPStore } from '@/lib/store-data';
 import { useStoreConfig } from '@/lib/store-config';
@@ -41,7 +43,7 @@ import { ROLE_SIDEBARS, NavItem } from '@/config/navigation';
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, getActiveStore, checkPermission } = useERPStore();
+  const { currentUser, logout, getActiveStore, checkPermission, theme, setTheme } = useERPStore();
   const { ecommerceEnabled, disabledModules } = useStoreConfig();
   const activeStore = getActiveStore();
 
@@ -174,7 +176,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col h-screen bg-white text-slate-600 border-r border-slate-200 sticky top-0 transition-all duration-300 ease-in-out relative ${isCollapsed ? 'w-20' : 'w-64'
+      className={`hidden lg:flex flex-col h-screen bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl text-slate-600 dark:text-slate-300 border-r border-slate-200/50 dark:border-slate-800/50 sticky top-0 transition-all duration-300 ease-in-out relative ${isCollapsed ? 'w-20' : 'w-64'
         }`}
     >
       {/* ISO Styled Toggle Button */}
@@ -186,7 +188,7 @@ export function Sidebar() {
       </button>
 
       {/* Clean Header */}
-      <div className={`p-5 border-b border-slate-100 bg-white transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
+      <div className={`p-5 border-b border-slate-200/50 bg-transparent transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
         <div className={`flex items-center mb-1 ${isCollapsed ? 'flex-col gap-2' : 'gap-4'}`}>
           <div className={`flex items-center justify-center transition-all ${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'}`}>
             <img src={logo} alt="Invenza Logo" className="w-full h-full object-contain filter drop-shadow-sm" />
@@ -196,7 +198,7 @@ export function Sidebar() {
               <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">Invenza</h1>
               <div className="flex items-center gap-2 mt-2">
                 <span className="text-[10px] font-bold bg-orange-900/50 px-2 py-0.5 rounded-full text-orange-400 border border-orange-800">
-                  SaaS DEV {appVersion}
+                  {import.meta.env.DEV ? `SaaS DEV ${appVersion}` : appVersion}
                 </span>
                 <button
                   onClick={async () => {
@@ -235,11 +237,12 @@ export function Sidebar() {
             return (
               <button
                 key={item.href}
+                id={`nav-${item.href.replace(/^\//, '').replace(/\//g, '-') || 'dashboard'}`}
                 onClick={() => navigate(item.href)}
                 className={`w-full flex items-center rounded-xl transition-all ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'
                   } ${isActive
                     ? 'bg-primary text-white shadow-lg'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-primary'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-primary dark:hover:text-primary'
                   }`}
                 title={isCollapsed ? item.title : ''}
               >
@@ -260,7 +263,7 @@ export function Sidebar() {
       </div>
 
       {/* User Section (Docked to bottom) */}
-      <div className={`p-4 border-t border-slate-200 bg-slate-50 transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
+      <div className={`p-4 border-t border-slate-200/50 bg-transparent transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
         <div className={`flex items-center mb-3 ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-10 h-10 bg-primary flex items-center justify-center text-white text-sm font-bold rounded-xl shadow-inner border border-white/10 group-hover:rotate-3 transition-transform">
             {currentUser?.name?.charAt(0) || 'U'}

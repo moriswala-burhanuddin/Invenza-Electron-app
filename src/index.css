@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -112,8 +114,24 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    /* Use iOS system fonts */
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    /* Use Outfit font */
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
   }
 
   /* Global Page Entry */
@@ -149,7 +167,7 @@
 
   /* Clean Header */
   .erp-page-header {
-    @apply sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3 md:px-6 flex items-center justify-between;
+    @apply sticky top-0 z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-gray-200/50 dark:border-slate-800/50 px-4 py-3 md:px-6 flex items-center justify-between;
   }
 
   .erp-page-content {
@@ -158,7 +176,7 @@
 
   /* Bottom Nav */
   .erp-bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-gray-200 flex items-center justify-around h-[4.5rem] lg:hidden z-50 pb-safe;
+    @apply fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-gray-200 dark:border-slate-800 flex items-center justify-around h-[4.5rem] lg:hidden z-50 pb-safe;
     /* pb-safe for iPhone bottom bar spacing */
   }
 
@@ -172,12 +190,12 @@
 
   /* Inputs - iOS style */
   .erp-input {
-    @apply w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition-all text-base md:text-sm;
+    @apply w-full px-4 py-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-[3px] focus:ring-primary/20 focus:border-primary focus:bg-white transition-all duration-200 text-base md:text-sm shadow-sm;
   }
 
   /* Buttons - Clean iOS Style */
   .erp-button {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-[15px] transition-all focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-[15px] transition-all duration-200 focus:outline-none focus:ring-[3px] focus:ring-primary/20 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.97];
   }
 
   .erp-button-primary {
