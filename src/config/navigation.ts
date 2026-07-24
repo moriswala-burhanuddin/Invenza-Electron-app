@@ -69,7 +69,7 @@ export const ROLE_SIDEBARS: Record<Role, NavItem[]> = {
         { title: "Store Config", href: "/store-config", icon: Settings },
         { title: "Access Control", href: "/access-control", icon: Shield },
         { title: "Sync Diagnostics", href: "/sync-diagnostics", icon: Activity },
-        { title: "Subscription", href: "/subscription", icon: ShieldCheck },
+        // { title: "Subscription", href: "/subscription", icon: ShieldCheck },
     ],
 
     // HR Manager
