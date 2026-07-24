@@ -2074,6 +2074,8 @@ addCol('accounts',      'is_deleted INTEGER DEFAULT 0');
 addCol('stores',        'is_deleted INTEGER DEFAULT 0');
 addCol('users',         'deleted_at TEXT');
 addCol('employees',     'deleted_at TEXT');
+addCol('stock_logs',    'product_name TEXT');
+addCol('stock_logs',    'created_at TEXT');
 // --------------------------------------------------------
 // --------------------------------------------------------
 // --- AUTO-RESTORE DEVELOPER ACCOUNTS ---
