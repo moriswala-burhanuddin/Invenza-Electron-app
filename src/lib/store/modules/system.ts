@@ -10,13 +10,13 @@ export const createSystemSlice: StoreSlice<SystemState> = (set, get) => ({
   syncError: null,
   testModeEnabled: false,
   hasCompletedTour: false,
-  theme: 'system',
+  theme: 'light',
   activityLogs: [],
 
   setTheme: (theme: 'light' | 'dark' | 'system') => {
     set({ theme });
     // Immediately apply to document for instant feedback
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = theme === 'dark'; // Force light if system (since toggle is hidden)
     document.documentElement.classList.toggle('dark', isDark);
   },
   completeTour: () => set({ hasCompletedTour: true }),

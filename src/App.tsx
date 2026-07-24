@@ -170,7 +170,7 @@ const App = () => {
   
   // Apply theme on mount and when theme changes
   useEffect(() => {
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = theme === 'dark';
     document.documentElement.classList.toggle('dark', isDark);
   }, [theme]);
 
