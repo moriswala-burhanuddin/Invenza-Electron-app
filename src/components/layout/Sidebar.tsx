@@ -30,7 +30,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Sun,
-  Moon
+  Moon,
+  HelpCircle
 } from 'lucide-react';
 import { useERPStore } from '@/lib/store-data';
 import { useStoreConfig } from '@/lib/store-config';
@@ -43,7 +44,7 @@ import { ROLE_SIDEBARS, NavItem } from '@/config/navigation';
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, getActiveStore, checkPermission, theme, setTheme } = useERPStore();
+  const { currentUser, logout, getActiveStore, checkPermission, theme, setTheme, resetTour } = useERPStore();
   const { ecommerceEnabled, disabledModules } = useStoreConfig();
   const activeStore = getActiveStore();
 
@@ -223,6 +224,20 @@ export function Sidebar() {
         {!isCollapsed && activeStore && (
           <p className="text-xs text-gray-400 mt-2 font-medium truncate">{activeStore.name} [{activeStore.branch}]</p>
         )}
+        
+        {/* Guide Button */}
+        <button
+          onClick={() => {
+            resetTour();
+            navigate('/');
+          }}
+          className={`mt-4 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-600 transition-all border border-blue-100 rounded-xl ${isCollapsed ? 'w-10 h-10 p-0 mx-auto' : 'w-full px-3 py-2 gap-2 text-xs font-bold'
+            }`}
+          title={isCollapsed ? 'Start Tour Guide' : ''}
+        >
+          <HelpCircle className={isCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+          {!isCollapsed && <span>APP GUIDE</span>}
+        </button>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-none">

@@ -10,6 +10,7 @@ export const createSystemSlice: StoreSlice<SystemState> = (set, get) => ({
   syncError: null,
   testModeEnabled: false,
   hasCompletedTour: false,
+  isTourActive: false,
   theme: 'light',
   activityLogs: [],
 
@@ -27,6 +28,15 @@ export const createSystemSlice: StoreSlice<SystemState> = (set, get) => ({
       localStorage.setItem(`invenza_tour_done_${user.email}`, 'true');
     }
   },
+  resetTour: () => {
+    set({ hasCompletedTour: false, isTourActive: false });
+    const user = get().currentUser;
+    if (user?.email) {
+      localStorage.removeItem(`invenza_tour_done_${user.email}`);
+    }
+  },
+  startTour: () => set({ isTourActive: true }),
+  stopTour: () => set({ isTourActive: false }),
   toggleTestMode: () => set((state) => ({ testModeEnabled: !state.testModeEnabled })),
 
   addActivityLog: (log: { action: string; details: string }) => {

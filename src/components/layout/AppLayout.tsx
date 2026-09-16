@@ -9,7 +9,6 @@ import { AIChat } from '../ai/AIChat';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
 import { SubscriptionGuard } from './SubscriptionGuard';
 import { CustomTitleBar } from './CustomTitleBar';
-import { VideoTransition } from './VideoTransition';
 
 export function AppLayout() {
   const { isAuthenticated, currentUser } = useERPStore();
@@ -83,7 +82,6 @@ export function AppLayout() {
         <BottomNav />
         {/* <AIChat /> */}
         <OnboardingTour />
-        <VideoTransition />
 
       </div>
     </SubscriptionGuard>
