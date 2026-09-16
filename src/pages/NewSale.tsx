@@ -106,10 +106,15 @@ export default function NewSale() {
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (accounts.length === 0) {
+      toast.error("Please create a store account first to process sales.");
+      navigate('/accounts');
+      return;
+    }
     if (accounts.length > 0 && !accountId) {
       setAccountId(accounts[0].id);
     }
-  }, [accounts, accountId]);
+  }, [accounts, accountId, navigate]);
 
   // Stats for the POS
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -446,7 +451,7 @@ export default function NewSale() {
           <div className="max-w-4xl mx-auto space-y-10">
             {/* 1. Sale Details */}
             <div className="grid grid-cols-1 gap-8">
-              <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
+              <div id="tour-newsale-type" className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
                 <div className="flex items-center gap-3 mb-8">
                   <Zap className="w-5 h-5 text-indigo-600" />
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Sale Type</h3>
@@ -480,7 +485,7 @@ export default function NewSale() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white flex flex-col">
+              <div id="tour-newsale-customer" className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white flex flex-col">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
                     <UserPlus className="w-5 h-5 text-indigo-600" />
@@ -546,7 +551,7 @@ export default function NewSale() {
             </div>
 
             {/* 2. Cart Items */}
-            <div className="bg-white rounded-[3rem] p-12 shadow-sm border border-white">
+            <div id="tour-newsale-cart" className="bg-white rounded-[3rem] p-12 shadow-sm border border-white">
               <div className="flex items-center justify-between mb-12">
                 <div className="flex items-center gap-4">
                   <div className="p-4 bg-indigo-50 rounded-2xl">
@@ -704,7 +709,7 @@ export default function NewSale() {
         </div>
 
         {/* Payment Section Sidebar */}
-        <div className="w-full xl:w-[450px] bg-white border-t xl:border-t-0 xl:border-l border-slate-100 flex flex-col p-6 md:p-10 shadow-2xl shadow-black/5 z-40 relative">
+        <div id="tour-newsale-payment" className="w-full xl:w-[450px] bg-white border-t xl:border-t-0 xl:border-l border-slate-100 flex flex-col p-6 md:p-10 shadow-2xl shadow-black/5 z-40 relative">
           <div className="flex items-center justify-between mb-12">
             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Payment Section</h3>
             <div className="p-3 bg-emerald-50 rounded-2xl">

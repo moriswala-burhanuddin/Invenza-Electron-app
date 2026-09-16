@@ -266,7 +266,7 @@ export default function Products() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
 
         {/* Superior Action Bar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div id="tour-product-search" className="flex flex-col md:flex-row gap-4 mb-8 relative">
           <div className="flex-1 relative group">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
               <Search className="w-5 h-5 text-slate-400 group-focus-within:text-foreground transition-colors" />
@@ -280,7 +280,7 @@ export default function Products() {
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+          <div id="tour-product-actions" className="flex gap-2 pb-2 md:pb-0 relative z-10">
             {canAddProduct && (
             <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
               <DialogTrigger asChild>
@@ -352,7 +352,7 @@ export default function Products() {
         </div>
 
         {/* Quick Scanner Card */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-6 mb-8 shadow-xl shadow-slate-900/10 transition-transform active:scale-[0.99] group overflow-hidden relative">
+        <div id="tour-product-scanner" className="bg-slate-900 rounded-[2.5rem] p-6 mb-8 shadow-xl shadow-slate-900/10 transition-transform active:scale-[0.99] group overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <ScanBarcode className="w-32 h-32 text-white" />
           </div>
@@ -395,7 +395,7 @@ export default function Products() {
         </div>
 
         {/* Filtering & Layout Selection */}
-        <div className="flex items-center justify-between mb-6 px-4">
+        <div id="tour-product-filters" className="flex items-center justify-between mb-6 px-4 relative z-10">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Filter className="w-3 h-3 text-slate-400" />
@@ -438,7 +438,7 @@ export default function Products() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="tour-product-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <div

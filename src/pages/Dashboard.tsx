@@ -143,7 +143,7 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
 
         {/* View Options */}
-        <div className="flex items-center justify-between mb-8 relative z-10">
+        <div id="tour-time-filters" className="flex items-center justify-between mb-8 relative z-10">
           <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-sm border border-white dark:border-slate-800">
             {['today', 'week', 'month', 'year'].map((range) => (
               <button
@@ -167,6 +167,7 @@ export default function Dashboard() {
 
         {/* Stats Widgets Grid */}
         <motion.div 
+          id="tour-stats-grid"
           variants={container}
           initial="hidden"
           animate="show"
@@ -174,7 +175,7 @@ export default function Dashboard() {
         >
           {stats.map((stat, i) => (
             <motion.div key={stat.label} variants={item}>
-            <div key={stat.label} className="group bg-card text-card-foreground rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden border border-slate-100 dark:border-slate-800">
+            <div key={stat.label} id={`tour-stat-${stat.label.replace(/\s+/g, '-').toLowerCase()}`} className="group bg-card text-card-foreground rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 relative overflow-hidden border border-slate-100 dark:border-slate-800">
               <div className={cn("absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-[0.03] group-hover:scale-150 transition-transform duration-700", stat.color)} />
 
               <div className="flex justify-between items-start mb-6">
@@ -204,7 +205,7 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-3 gap-8 mb-10">
           {/* Main Analytical Card */}
           {(canSeeRevenue || canSeeProfit) && (
-          <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 shadow-sm border border-white/50 relative overflow-hidden group">
+          <div id="tour-revenue-chart" className="lg:col-span-2 bg-white rounded-[3rem] p-10 shadow-sm border border-white/50 relative overflow-hidden group">
             <div className="flex items-center justify-between mb-10">
               <div>
                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-1">Revenue Performance</h3>
@@ -266,7 +267,7 @@ export default function Dashboard() {
 
           {/* Stats Summary */}
           <div className={cn("space-y-6", (!canSeeRevenue && !canSeeProfit) ? "lg:col-span-3" : "")}>
-            <div className="bg-primary rounded-[2.5rem] p-8 text-white relative overflow-hidden">
+            <div id="tour-target-summary" className="bg-primary rounded-[2.5rem] p-8 text-white relative overflow-hidden">
               <Target className="absolute -bottom-4 -right-4 w-32 h-32 opacity-10" />
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Target</h4>
               <div className="relative">
@@ -280,7 +281,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-white/50">
+            <div id="tour-recent-activity" className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-white/50">
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center justify-between">
                 Recent Activity
                 <Activity className="w-3 h-3" />
@@ -308,7 +309,7 @@ export default function Dashboard() {
         </div>
 
         {/* Action Shortcuts */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div id="tour-action-shortcuts" className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
             { label: 'New Sale', icon: Plus, path: '/sales/new', color: 'bg-primary text-white' },
             { label: 'Inventory', icon: Package, path: '/products', color: 'bg-white text-foreground' },
@@ -336,7 +337,7 @@ export default function Dashboard() {
 
         {/* Stock and Payment Tables */}
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-[3rem] p-10 shadow-sm border border-white relative overflow-hidden">
+          <div id="tour-stock-alerts" className="bg-white rounded-[3rem] p-10 shadow-sm border border-white relative overflow-hidden">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Stock Alerts</h4>
@@ -373,7 +374,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[3rem] p-10 shadow-sm border border-white relative overflow-hidden">
+          <div id="tour-unpaid-sales" className="bg-white rounded-[3rem] p-10 shadow-sm border border-white relative overflow-hidden">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Unpaid Sales</h4>

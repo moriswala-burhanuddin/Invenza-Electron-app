@@ -21,6 +21,7 @@ export default function NewProduct() {
     updateProduct,
     getStoreProducts,
     activeStoreId,
+    getActiveStore,
     customFields,
     productCustomValues,
     updateProductCustomValues,
@@ -59,6 +60,13 @@ export default function NewProduct() {
   const isEditMode = Boolean(id);
 
   useEffect(() => {
+    const activeStore = getActiveStore();
+    if (!activeStore) {
+      toast.error("Please select a store first to add or edit products.");
+      navigate('/stores');
+      return;
+    }
+
     if (isEditMode) {
       const products = getStoreProducts();
       const product = products.find(p => p.id === id);
@@ -120,7 +128,7 @@ export default function NewProduct() {
         limitedQty: product.limitedQty?.toString() || '',
       });
     }
-  }, [id, isEditMode, getStoreProducts, navigate, productCustomValues, location.state, categories, canAddProduct, baseCurrency]);
+  }, [id, isEditMode, getStoreProducts, navigate, productCustomValues, location.state, categories, canAddProduct, baseCurrency, getActiveStore, activeStoreId]);
 
   const handleAiSuggest = async () => {
     if (!formData.name.trim()) {
@@ -261,7 +269,7 @@ export default function NewProduct() {
             <Button variant="ghost" onClick={() => navigate('/products')} className="rounded-[1.2rem] h-12 px-6 font-black uppercase text-[10px] tracking-widest">
               Discard
             </Button>
-            <Button onClick={handleSubmit} className="bg-primary text-white rounded-[1.2rem] h-12 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            <Button id="tour-new-product-save" onClick={handleSubmit} className="bg-primary text-white rounded-[1.2rem] h-12 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
               <Save className="w-4 h-4 mr-2" />
               Save Product
             </Button>
@@ -272,7 +280,7 @@ export default function NewProduct() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Essential Identity Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
+          <div id="tour-new-product-details" className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center">
                 <Info className="w-6 h-6 text-indigo-600" />
@@ -390,7 +398,7 @@ export default function NewProduct() {
           </div>
 
           {/* Financial & Stock Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
+          <div id="tour-new-product-pricing" className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-emerald-600" />
@@ -446,7 +454,7 @@ export default function NewProduct() {
           </div>
 
           {/* Logistics Strategy Card */}
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
+          <div id="tour-new-product-limits" className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-amber-600" />

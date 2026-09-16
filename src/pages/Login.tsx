@@ -155,10 +155,20 @@ export default function Login() {
         if (rememberMe) {
           const alreadySaved = savedAccounts.find(a => a.email.toLowerCase() === email.toLowerCase());
           if (!alreadySaved) {
+            // New account - ask to save
             setPendingCredentials({ email, password });
             setShowSavePrompt(true);
             setLoading(false);
             return;
+          } else if (alreadySaved.password !== password) {
+            // Password changed - silently update saved credentials
+            const updated = savedAccounts.map(a => 
+              a.email.toLowerCase() === email.toLowerCase() 
+                ? { ...a, password } 
+                : a
+            );
+            setSavedAccounts(updated);
+            await persistAccounts(updated);
           }
         }
         proceedToDashboard();
@@ -351,7 +361,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-foreground h-20 rounded-[2.2rem] font-black uppercase tracking-[0.3em] text-xs shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:shadow-[0_25px_50px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group"
+              className="w-full bg-[#ffffff] text-black h-20 rounded-[2.2rem] font-black uppercase tracking-[0.3em] text-xs shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:shadow-[0_25px_50px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group"
             >
               {loading ? (
                 <div className="w-6 h-6 border-3 border-primary/20 border-t-black rounded-full animate-spin" />
@@ -418,7 +428,7 @@ export default function Login() {
             <div className="grid grid-cols-1 gap-4">
               <button
                 onClick={savePendingAccount}
-                className="w-full h-16 bg-white text-black rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="w-full h-16 bg-[#ffffff] text-black rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 <Check className="w-4 h-4" />
                 SECURE SAVE

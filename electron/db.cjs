@@ -737,7 +737,7 @@ try {
       CREATE TABLE IF NOT EXISTS purchases (
         id TEXT PRIMARY KEY,
         company_id TEXT,
-        invoice_number TEXT UNIQUE NOT NULL,
+        invoice_number TEXT NOT NULL,
         supplier TEXT, -- Relaxed NOT NULL for AI flow/Sync
         supplier_id TEXT,
         type TEXT NOT NULL,
@@ -869,8 +869,102 @@ try {
         db.prepare("ALTER TABLE kit_items ADD COLUMN device_id TEXT").run();
       }
 
+      
+      // Relax INVOICE_NUMBER uniqueness for multi-tenancy sales, quotations, purchases, invoices
+      const tablesToCheck = ['sales', 'quotations', 'purchases', 'invoices'];
+      for (const table of tablesToCheck) {
+          const schemaResult = db.prepare(`SELECT sql FROM sqlite_master WHERE type='table' AND name=?`).get(table);
+          if (schemaResult && schemaResult.sql.toLowerCase().includes("invoice_number text unique")) {
+              console.log(`[DB] Migration: Refining ${table} schema (removing invoice_number uniqueness)...`);
+              db.transaction(() => {
+                  db.pragma('foreign_keys = OFF');
+                  db.exec(`ALTER TABLE ${table} RENAME TO ${table}_old`);
+                  
+                  // Extract columns dynamically from old table to reconstruct exact structure in new table without unique
+                  const oldCols = db.prepare(`PRAGMA table_info(${table}_old)`).all();
+                  let createCols = [];
+                  for (let col of oldCols) {
+                      let colDef = `${col.name} ${col.type}`;
+                      if (col.name === 'id') colDef += " PRIMARY KEY";
+                      else if (col.name === 'invoice_number') colDef += " NOT NULL"; // stripped unique
+                      else {
+                          if (col.notnull) colDef += " NOT NULL";
+                          if (col.dflt_value !== null) colDef += ` DEFAULT ${col.dflt_value}`;
+                      }
+                      createCols.push(colDef);
+                  }
+                  
+                  db.exec(`CREATE TABLE ${table} (\n${createCols.join(',\n')}\n)`);
+                  
+                  const colNames = oldCols.map(c => c.name).join(', ');
+                  db.exec(`INSERT INTO ${table} (${colNames}) SELECT ${colNames} FROM ${table}_old`);
+                  
+                  db.exec(`DROP TABLE IF EXISTS ${table}_old`);
+                  db.pragma('foreign_keys = ON');
+              })();
+          }
+      }
+
       // Relax SKU uniqueness for multi-tenancy
-      const kitSchemaResult = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='item_kits'").get();
+              const productSchemaResult = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='products'").get();
+        const productNeedsSkuFix = productSchemaResult && (productSchemaResult.sql.toLowerCase().includes("sku text unique") || productSchemaResult.sql.toLowerCase().includes("sku unique"));
+
+        if (productNeedsSkuFix) {
+            console.log("[DB] Migration: Refining Product schema (removing SKU uniqueness)...");
+            db.transaction(() => {
+                db.pragma('foreign_keys = OFF');
+                db.exec("ALTER TABLE products RENAME TO products_old");
+                db.exec(`
+                  CREATE TABLE products (
+                      id TEXT PRIMARY KEY,
+                      company_id TEXT,
+                      store_id TEXT NOT NULL,
+                      name TEXT NOT NULL,
+                      description TEXT,
+                      sku TEXT,
+                      category TEXT,
+                      selling_price REAL NOT NULL,
+                      purchase_price REAL NOT NULL,
+                      quantity REAL DEFAULT 0,
+                      last_used TEXT,
+                      unit TEXT DEFAULT 'Pcs',
+                      brand TEXT,
+                      barcode TEXT,
+                      min_stock INTEGER DEFAULT 0,
+                      reorder_quantity INTEGER DEFAULT 0,
+                      categoryId TEXT,
+                      categoryName TEXT,
+                      is_deleted INTEGER DEFAULT 0,
+                      is_kit INTEGER DEFAULT 0,
+                      limited_qty INTEGER,
+                      barcode_enabled INTEGER DEFAULT 1,
+                      tax_slab_id TEXT,
+                      device_id TEXT,
+                      discount_percentage REAL DEFAULT 0,
+                      price_inr REAL,
+                      price_usd REAL,
+                      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+                      sync_status INTEGER DEFAULT 0,
+                      deleted_at TEXT,
+                      FOREIGN KEY (store_id) REFERENCES stores(id),
+                      FOREIGN KEY (categoryId) REFERENCES categories(id)
+                  )
+                `);
+                
+                // Also recreate the index
+                db.exec("CREATE INDEX IF NOT EXISTS idx_products_company_store ON products(company_id, store_id)");
+
+                const currentProdCols = db.prepare("PRAGMA table_info(products_old)").all().map(c => c.name);
+                const targetProdCols = db.prepare("PRAGMA table_info(products)").all().map(c => c.name);
+                const commonProdCols = currentProdCols.filter(c => targetProdCols.includes(c));
+                const prodColsStr = commonProdCols.join(', ');
+                db.exec(`INSERT INTO products (` + prodColsStr + `) SELECT ` + prodColsStr + ` FROM products_old`);
+
+                db.exec("DROP TABLE IF EXISTS products_old");
+                db.pragma('foreign_keys = ON');
+            })();
+        }
+        const kitSchemaResult = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='item_kits'").get();
       const kitItemSchemaResult = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='kit_items'").get();
       
       const needsSkuFix = kitSchemaResult && (kitSchemaResult.sql.toLowerCase().includes("sku text unique") || kitSchemaResult.sql.toLowerCase().includes("sku unique"));
@@ -1339,7 +1433,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS purchases (
     id TEXT PRIMARY KEY,
     company_id TEXT,
-    invoice_number TEXT UNIQUE NOT NULL,
+    invoice_number TEXT NOT NULL,
     supplier TEXT, -- Relaxed NOT NULL
     supplier_id TEXT,
     type TEXT CHECK(type IN ('cash', 'credit')) NOT NULL,
@@ -2221,7 +2315,7 @@ try {
       db.exec(`
         CREATE TABLE sales (
           id TEXT PRIMARY KEY,
-          invoice_number TEXT UNIQUE NOT NULL,
+          invoice_number TEXT NOT NULL,
           type TEXT CHECK(type IN ('retail', 'cash', 'credit')) NOT NULL,
           status TEXT DEFAULT 'completed',
           items TEXT NOT NULL,
@@ -2302,7 +2396,7 @@ try {
       CREATE TABLE IF NOT EXISTS invoices (
   id TEXT PRIMARY KEY,
     company_id TEXT,
-  invoice_number TEXT UNIQUE NOT NULL,
+  invoice_number TEXT NOT NULL,
   type TEXT CHECK(type IN('customer', 'supplier')) NOT NULL,
   status TEXT CHECK(status IN('draft', 'sent', 'paid', 'overdue', 'cancelled')) DEFAULT 'draft',
   customer_id TEXT,

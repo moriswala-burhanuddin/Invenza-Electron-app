@@ -103,12 +103,20 @@ function createWindow() {
         width: 1200,
         height: 800,
         icon: path.join(__dirname, '../build/icon.png'),
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#0f172a',
+            symbolColor: '#ffffff',
+            height: 32
+        },
         webPreferences: {
             preload: path.join(__dirname, 'preload.cjs'),
             contextIsolation: true,
             nodeIntegration: false
         }
     })
+
+    Menu.setApplicationMenu(null);
 
     // In development, reload the local server (Port 8081 for SaaS Dev)
     if (!app.isPackaged && process.env.NODE_ENV !== 'production') {

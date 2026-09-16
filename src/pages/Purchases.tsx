@@ -41,7 +41,7 @@ export default function Purchases() {
           </div>
 
           {(canSeePurchases || canSeeSuppliers) && (
-            <div className="flex items-center gap-3">
+            <div id="tour-purchase-actions" className="flex items-center gap-3">
               <div className="group relative">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-foreground transition-colors" />
                 <input
@@ -54,7 +54,7 @@ export default function Purchases() {
               <Button variant="ghost" className="rounded-2xl h-12 w-12 p-0 bg-slate-50">
                 <Filter className="w-5 h-5 text-slate-400" />
               </Button>
-              <Button onClick={() => navigate('/purchases/new')} className="bg-primary text-white rounded-[1.2rem] h-14 px-10 font-black uppercase text-[10px] tracking-[0.2em] shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+              <Button id="tour-purchase-add" onClick={() => navigate('/purchases/new')} className="bg-primary text-white rounded-[1.2rem] h-14 px-10 font-black uppercase text-[10px] tracking-[0.2em] shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <Plus className="w-4 h-4 mr-2" />
                 New Purchase
               </Button>
@@ -75,7 +75,7 @@ export default function Purchases() {
         ) : (
           <>
             {/* Stats */}
-            <div className="grid md:grid-cols-4 gap-6 mb-12">
+            <div id="tour-purchase-stats" className="grid md:grid-cols-4 gap-6 mb-12">
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-white">
                 <div className="p-3 bg-indigo-50 rounded-xl w-fit mb-6 text-indigo-500">
                   <TrendingUp className="w-5 h-5" />
@@ -110,7 +110,7 @@ export default function Purchases() {
             </div>
 
             {/* Purchase Stream */}
-            <div className="bg-white rounded-[3rem] p-12 shadow-sm border border-white min-h-[600px]">
+            <div id="tour-purchase-list" className="bg-white rounded-[3rem] p-12 shadow-sm border border-white min-h-[600px]">
               <div className="flex items-center justify-between mb-12">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">All Purchases</h3>
               </div>

@@ -176,7 +176,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col h-screen bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl text-slate-600 dark:text-slate-300 border-r border-slate-200/50 dark:border-slate-800/50 sticky top-0 transition-all duration-300 ease-in-out relative ${isCollapsed ? 'w-20' : 'w-64'
+      className={`hidden lg:flex flex-col h-full bg-sidebar/80 backdrop-blur-2xl text-sidebar-foreground border-r border-sidebar-border sticky top-0 transition-all duration-300 ease-in-out relative ${isCollapsed ? 'w-20' : 'w-64'
         }`}
     >
       {/* ISO Styled Toggle Button */}
@@ -188,7 +188,7 @@ export function Sidebar() {
       </button>
 
       {/* Clean Header */}
-      <div className={`p-5 border-b border-slate-200/50 bg-transparent transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
+      <div className={`p-5 border-b border-sidebar-border bg-transparent transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
         <div className={`flex items-center mb-1 ${isCollapsed ? 'flex-col gap-2' : 'gap-4'}`}>
           <div className={`flex items-center justify-center transition-all ${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'}`}>
             <img src={logo} alt="Invenza Logo" className="w-full h-full object-contain filter drop-shadow-sm" />
@@ -241,8 +241,8 @@ export function Sidebar() {
                 onClick={() => navigate(item.href)}
                 className={`w-full flex items-center rounded-xl transition-all ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'
                   } ${isActive
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-primary dark:hover:text-primary'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   }`}
                 title={isCollapsed ? item.title : ''}
               >
@@ -263,18 +263,38 @@ export function Sidebar() {
       </div>
 
       {/* User Section (Docked to bottom) */}
-      <div className={`p-4 border-t border-slate-200/50 bg-transparent transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
+      <div className={`p-4 border-t border-sidebar-border bg-transparent transition-all ${isCollapsed ? 'items-center px-2' : ''}`}>
         <div className={`flex items-center mb-3 ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-10 h-10 bg-primary flex items-center justify-center text-white text-sm font-bold rounded-xl shadow-inner border border-white/10 group-hover:rotate-3 transition-transform">
             {currentUser?.name?.charAt(0) || 'U'}
           </div>
           {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-foreground truncate tracking-tight">{currentUser?.name || 'User'}</p>
-              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{currentUser?.role || 'user'}</p>
+            <div className="flex-1 min-w-0 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-black text-foreground truncate tracking-tight">{currentUser?.name || 'User'}</p>
+                <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{currentUser?.role || 'user'}</p>
+              </div>
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-1.5 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground transition-colors rounded-lg hover:bg-sidebar-accent"
+                title="Toggle Theme"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
             </div>
           )}
         </div>
+        
+        {isCollapsed && (
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center justify-center w-10 h-10 mb-2 p-0 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground transition-colors rounded-xl hover:bg-sidebar-accent"
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        )}
+
         <button
           onClick={handleLogout}
           className={`flex items-center justify-center bg-primary hover:bg-rose-600 text-white transition-all border border-blue-800/10 rounded-xl ${isCollapsed ? 'w-10 h-10 p-0' : 'w-full px-3 py-2.5 gap-2 text-xs font-bold'

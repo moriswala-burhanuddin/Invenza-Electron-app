@@ -22,7 +22,7 @@ interface CompanyData {
 }
 
 export default function Subscription() {
-    const { currentUser, getActiveStore } = useERPStore();
+    const { currentUser, getActiveStore, accessToken } = useERPStore();
     const [company, setCompany] = useState<CompanyData | null>(null);
     const [loading, setLoading] = useState(true);
     const activeStore = getActiveStore();
@@ -30,16 +30,11 @@ export default function Subscription() {
 
     useEffect(() => {
         const fetchCompanyDetails = async () => {
-            if (!companyId) {
-                setLoading(false);
-                return;
-            }
             try {
-                // Get JWT token if available, or try central API
-                const token = localStorage.getItem('access_token');
-                const res = await fetch(`${API_URL.replace('/v1', '')}/companies/${companyId}/`, {
-                    headers: token ? { 
-                        'Authorization': `Bearer ${token}`,
+                // Get JWT token from store
+                const res = await fetch(`${API_URL.replace('/v1', '')}/erp-credentials/`, {
+                    headers: accessToken ? { 
+                        'Authorization': `Bearer ${accessToken}`,
                         'Content-Type': 'application/json'
                     } : {
                         'Content-Type': 'application/json'
@@ -48,7 +43,19 @@ export default function Subscription() {
                 
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const data = await res.json();
-                setCompany(data);
+                
+                setCompany({
+                    id: data.company_id,
+                    name: data.company_name,
+                    subscription_status: data.subscription_status || 'trial',
+                    trial_days_left: data.trial_days || 0,
+                    expiry_date: data.expiry_date,
+                    is_ai_enabled: true,
+                    created_at: new Date().toISOString(),
+                    subscription: {
+                        plan_name: data.plan_name || 'Trial'
+                    }
+                });
             } catch (error) {
                 console.error("Failed to fetch subscription details", error);
                 // Mock fallback for UI demo purposes if network fails in electron

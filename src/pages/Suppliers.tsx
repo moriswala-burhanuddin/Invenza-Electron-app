@@ -105,7 +105,7 @@ export default function Suppliers() {
                             <Download className="w-5 h-5 text-slate-400" />
                         </button>
                         <div className="h-10 w-px bg-slate-100 mx-2" />
-                        <Button onClick={() => navigate('/suppliers/new')} className="bg-primary text-white rounded-[1.2rem] h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        <Button id="tour-supplier-add" onClick={() => navigate('/suppliers/new')} className="bg-primary text-white rounded-[1.2rem] h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                             <Plus className="w-4 h-4 mr-2" />
                             Add Supplier
                         </Button>
@@ -125,7 +125,7 @@ export default function Suppliers() {
                 ) : (
                   <>
                     {/* Visual Intelligence Widgets */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div id="tour-supplier-stats" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-white">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="p-4 bg-emerald-50 rounded-2xl text-emerald-600">
@@ -161,7 +161,7 @@ export default function Suppliers() {
                     </div>
 
                     {/* Registry Controls */}
-                    <div className="bg-white rounded-[2.5rem] p-6 mb-8 border border-white shadow-sm flex items-center justify-between gap-6">
+                    <div id="tour-supplier-actions" className="bg-white rounded-[2.5rem] p-6 mb-8 border border-white shadow-sm flex items-center justify-between gap-6">
                         <div className="flex-1 relative group max-w-xl">
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-foreground transition-colors" />
                             <input
@@ -204,7 +204,7 @@ export default function Suppliers() {
                     </div>
 
                     {/* Provider Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div id="tour-supplier-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredSuppliers.map((s) => {
                             const isSelected = selectedIds.includes(s.id);
                             return (

@@ -43,7 +43,7 @@ export default function StockSummary() {
                     <p className="text-white/50 font-bold text-xs uppercase tracking-widest">Global Inventory Synthesis • Data Node 01</p>
                 </div>
 
-                <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-[2.5rem] flex items-center gap-6 shadow-2xl">
+                <div id="tour-summary-total" className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-[2.5rem] flex items-center gap-6 shadow-2xl">
                     <div className="p-4 bg-[#2156C1] rounded-2xl shadow-lg">
                         <Wallet className="w-6 h-6 text-white" />
                     </div>
@@ -59,7 +59,7 @@ export default function StockSummary() {
             <main className="relative z-10 max-w-7xl mx-auto px-6 space-y-10">
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="group relative bg-white/10 backdrop-blur-lg border border-white/10 p-8 rounded-[3rem] shadow-xl hover:bg-white/[0.15] transition-all duration-500">
+                    <div id="tour-summary-units" className="group relative bg-white/10 backdrop-blur-lg border border-white/10 p-8 rounded-[3rem] shadow-xl hover:bg-white/[0.15] transition-all duration-500">
                         <div className="absolute top-6 right-8 text-white/10 group-hover:text-white/20 transition-colors">
                             <Box className="w-12 h-12" />
                         </div>
@@ -71,7 +71,7 @@ export default function StockSummary() {
                     </div>
 
                     {canSeeExpectedSales && (
-                        <div className="group relative bg-[#2156C1]/30 backdrop-blur-lg border border-white/10 p-8 rounded-[3rem] shadow-xl hover:bg-[#2156C1]/40 transition-all duration-500">
+                        <div id="tour-summary-revenue" className="group relative bg-[#2156C1]/30 backdrop-blur-lg border border-white/10 p-8 rounded-[3rem] shadow-xl hover:bg-[#2156C1]/40 transition-all duration-500">
                             <div className="absolute top-6 right-8 text-white/10 group-hover:text-white/20 transition-colors">
                                 <TrendingUp className="w-12 h-12" />
                             </div>
@@ -81,7 +81,7 @@ export default function StockSummary() {
                     )}
 
                     {canSeeProfit && (
-                        <div className="group relative bg-emerald-500/20 backdrop-blur-lg border border-emerald-500/20 p-8 rounded-[3rem] shadow-xl hover:bg-emerald-500/30 transition-all duration-500">
+                        <div id="tour-summary-margin" className="group relative bg-emerald-500/20 backdrop-blur-lg border border-emerald-500/20 p-8 rounded-[3rem] shadow-xl hover:bg-emerald-500/30 transition-all duration-500">
                             <div className="absolute top-6 right-8 text-emerald-500/10 group-hover:text-emerald-500/20 transition-colors">
                                 <Sparkles className="w-12 h-12" />
                             </div>
@@ -104,7 +104,7 @@ export default function StockSummary() {
                             </div>
                         </div>
 
-                        <div className="relative group max-w-sm w-full">
+                        <div id="tour-summary-matrix" className="relative group max-w-sm w-full">
                             <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
                                 <Search className="w-4 h-4 text-white/30 group-focus-within:text-white transition-colors" />
                             </div>

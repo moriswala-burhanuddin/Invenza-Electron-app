@@ -148,7 +148,7 @@ export default function Sales() {
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{filteredSales.length} Records</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div id="tour-sales-actions" className="flex items-center gap-3">
                         <Button variant="ghost" className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl" onClick={exportCSV}>
                             <Download className="w-5 h-5 text-slate-400" />
                         </Button>
@@ -177,7 +177,7 @@ export default function Sales() {
           <>
             {/* Superior Filter Bar */}
             {canAccessAllInvoices && (
-            <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-6 mb-8 border border-white shadow-sm">
+            <div id="tour-sales-filters" className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-6 mb-8 border border-white shadow-sm">
                     <div className="grid lg:grid-cols-4 gap-4 items-center">
                         <div className="lg:col-span-2 relative group">
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-foreground transition-colors" />
@@ -245,7 +245,7 @@ export default function Sales() {
 
             {/* Intelligence Widgets */}
             {canSeeRevenueMetrics && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+            <div id="tour-sales-widgets" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
                     <div className="bg-primary rounded-[2rem] p-8 text-white shadow-xl shadow-black/10">
                         <div className="flex justify-between mb-6">
                             <Wallet className="w-6 h-6 text-slate-500" />
@@ -286,7 +286,7 @@ export default function Sales() {
 
             {/* Transaction List */}
             {canAccessAllInvoices && (
-            <div className="space-y-4">
+            <div id="tour-sales-list" className="space-y-4">
               {filteredSales.length > 0 ? (
                         filteredSales.map((sale) => (
                             <div

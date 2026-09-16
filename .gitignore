@@ -41,9 +41,13 @@ bugs.md
 
 # Invenza Website separate folder
 invenza-website/
+invenza-design-system/
 gunicorn.md
 vps.md
 check_all.cjs
 check_correct.cjs
 check.cjs
 _debug_archives/
+instagram-promo/
+invenza-promo-video/
+.env.production

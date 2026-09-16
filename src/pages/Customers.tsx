@@ -69,7 +69,7 @@ export default function Customers() {
             </button>
             <div className="h-10 w-px bg-slate-100 mx-2" />
             {canManageCustomers && (
-              <Button onClick={() => navigate('/customers/new')} className="bg-primary text-white rounded-[1.2rem] h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+              <Button id="tour-customer-add" onClick={() => navigate('/customers/new')} className="bg-primary text-white rounded-[1.2rem] h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <Plus className="w-4 h-4 mr-2 text-indigo-400" />
                 Add New Customer
               </Button>
@@ -90,7 +90,7 @@ export default function Customers() {
         ) : (
           <>
             {/* Intelligence Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div id="tour-customer-stats" className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-white relative overflow-hidden group">
                 <div className="p-4 bg-indigo-50 rounded-2xl w-fit mb-8 text-indigo-500">
                   <UsersIcon className="w-6 h-6" />
@@ -125,7 +125,7 @@ export default function Customers() {
             </div>
 
             {/* Registry Controls */}
-            <div className="bg-white p-6 rounded-[3rem] border border-white shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div id="tour-customer-actions" className="bg-white p-6 rounded-[3rem] border border-white shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8">
               <div className="flex-1 relative group max-w-2xl">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-foreground transition-colors" />
                 <input
@@ -165,7 +165,7 @@ export default function Customers() {
             </div>
 
             {/* Entity Matrix */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div id="tour-customer-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredCustomers.length > 0 ? (
                 filteredCustomers.map((c) => {
                   const isSelected = selectedIds.includes(c.id);

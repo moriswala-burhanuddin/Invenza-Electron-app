@@ -8,6 +8,9 @@ interface LicenseContextType {
   licenseKey: string | null;
   deviceId: string | null;
   clientInfo: any | null;
+  subscriptionStatus: 'active' | 'trial' | 'expired' | null;
+  expiryDate: string | null;
+  trialDaysLeft: number | null;
   features: string[];
   hasFeature: (featureName: string) => boolean;
   verifyLicense: (key: string) => Promise<boolean>;
@@ -21,18 +24,47 @@ import { API_URL as CENTRAL_API_URL } from "@/lib/config";
 // Ensure your Django backend URL is set here
 const API_BASE_URL = CENTRAL_API_URL;
 
+import { useERPStore } from "@/lib/store-data";
+
 export const LicenseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLicensed, setIsLicensed] = useState<boolean>(false);
   const [licenseKey, setLicenseKey] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [clientInfo, setClientInfo] = useState<any | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'active' | 'trial' | 'expired' | null>(null);
+  const [expiryDate, setExpiryDate] = useState<string | null>(null);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [features, setFeatures] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const initializeLicense = async () => {
-      // SAAS TRANSITION: License verification is now handled by the central SaaS subscription.
-      // We auto-activate the client and enable all features by default.
+      setIsLoading(true);
+      try {
+        const token = useERPStore.getState().accessToken;
+        if (token && token !== 'mock-local-token' && token !== 'bypass-token-offline') {
+          const res = await fetch(`${CENTRAL_API_URL}/erp-credentials/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            setSubscriptionStatus(data.subscription_status);
+            setExpiryDate(data.expiry_date || null);
+            setTrialDaysLeft(data.trial_days !== undefined ? data.trial_days : null);
+            setClientInfo({ name: data.company_name, id: data.id });
+          } else {
+            // Default to trial if request fails but we have a token
+            setSubscriptionStatus('trial');
+          }
+        } else {
+          setSubscriptionStatus(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch erp-credentials in LicenseContext", err);
+      }
+      
+      // We auto-activate the client features by default for the ERP.
       setIsLicensed(true);
       setLicenseKey("SAAS-ACTIVE");
       setFeatures([
@@ -47,7 +79,6 @@ export const LicenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
         'HR Module',
         'Ecommerce Sync'
       ]);
-      setClientInfo({ name: 'SaaS Enterprise User', id: 'saas' });
       setIsLoading(false);
     };
 
@@ -99,6 +130,9 @@ export const LicenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
         licenseKey,
         deviceId,
         clientInfo,
+        subscriptionStatus,
+        expiryDate,
+        trialDaysLeft,
         features,
         hasFeature,
         verifyLicense,

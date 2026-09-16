@@ -7,6 +7,9 @@ import saifeeLogo from '@/assets/saifee.png';
 import sysfotechLogo from '@/assets/sysfotech-logo.png';
 import { AIChat } from '../ai/AIChat';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
+import { SubscriptionGuard } from './SubscriptionGuard';
+import { CustomTitleBar } from './CustomTitleBar';
+import { VideoTransition } from './VideoTransition';
 
 export function AppLayout() {
   const { isAuthenticated, currentUser } = useERPStore();
@@ -27,9 +30,14 @@ export function AppLayout() {
     );
   }
 
-  // Role-based Redirects for Root Path (Handles both #/ and /)
-  const isRoot = window.location.hash === '#/' || window.location.hash === '';
+  // Role-based Redirects for Root Path
+  const isRoot = location.pathname === '/';
   if (isRoot) {
+    const activeStore = useERPStore.getState().getActiveStore();
+    if (!activeStore) {
+      return <Navigate to="/stores" replace />;
+    }
+
     const canSeeRevenue = useERPStore.getState().checkPermission('canSeeRevenueMetrics');
     
     // Admins and high-level managers stay on the Dashboard (/)
@@ -52,39 +60,32 @@ export function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-background transition-colors duration-300">
-      <Sidebar />
-      <main className="flex-1 min-w-0 bg-gray-50/30 dark:bg-transparent">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="h-full"
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
-      </main>
-      <BottomNav />
-      {/* <AIChat /> */}
-      <OnboardingTour />
+    <SubscriptionGuard>
+      <div className="flex flex-col h-screen w-full overflow-hidden bg-background transition-colors duration-300">
+        <CustomTitleBar />
+        <div className="flex flex-1 min-h-0 w-full relative">
+          <Sidebar />
+          <main className="flex-1 min-w-0 overflow-auto bg-gray-50/30 dark:bg-transparent">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
+        <BottomNav />
+        {/* <AIChat /> */}
+        <OnboardingTour />
+        <VideoTransition />
 
-      {/* Multi-Partner Watermarks */}
-      <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2 opacity-30 dark:opacity-10 pointer-events-none z-50 mix-blend-multiply dark:mix-blend-screen">
-        <img
-          src={saifeeLogo}
-          alt="Saifee"
-          className="w-20"
-        />
-        <img
-          src={sysfotechLogo}
-          alt="Sysfotech"
-          className="w-24"
-        />
       </div>
-    </div>
+    </SubscriptionGuard>
   );
 }

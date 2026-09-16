@@ -1,4 +1,4 @@
-[2026-07-20T11:24:23.576Z] Sales Schema: CREATE TABLE sales (
+[2026-08-25T10:02:42.896Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -27,8 +27,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-20T11:24:23.580Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-23T11:40:26.817Z] Sales Schema: CREATE TABLE sales (
+[2026-08-25T10:02:42.901Z] Sales table migration NOT NEEDED or condition not met.
+[2026-08-28T15:54:46.384Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -57,8 +57,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-23T11:40:26.822Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-23T16:43:43.728Z] Sales Schema: CREATE TABLE sales (
+[2026-08-28T15:54:46.391Z] Sales table migration NOT NEEDED or condition not met.
+[2026-08-29T09:42:52.975Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -87,8 +87,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-23T16:43:43.729Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-23T16:44:52.506Z] Sales Schema: CREATE TABLE sales (
+[2026-08-29T09:42:52.979Z] Sales table migration NOT NEEDED or condition not met.
+[2026-09-01T08:56:40.849Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -117,8 +117,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-23T16:44:52.507Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-23T16:48:14.301Z] Sales Schema: CREATE TABLE sales (
+[2026-09-01T08:56:40.853Z] Sales table migration NOT NEEDED or condition not met.
+[2026-09-03T09:35:06.376Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -147,8 +147,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-23T16:48:14.302Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-23T16:51:13.829Z] Sales Schema: CREATE TABLE sales (
+[2026-09-03T09:35:06.379Z] Sales table migration NOT NEEDED or condition not met.
+[2026-09-07T13:49:55.894Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -177,8 +177,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-23T16:51:13.830Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T09:03:01.156Z] Sales Schema: CREATE TABLE sales (
+[2026-09-07T13:49:55.900Z] Sales table migration NOT NEEDED or condition not met.
+[2026-09-07T14:32:01.912Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -207,8 +207,8 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-24T09:03:01.160Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T09:19:21.799Z] Sales Schema: CREATE TABLE sales (
+[2026-09-07T14:32:01.915Z] Sales table migration NOT NEEDED or condition not met.
+[2026-09-11T12:32:54.931Z] Sales Schema: CREATE TABLE sales (
             id TEXT PRIMARY KEY,
             company_id TEXT,
             store_id TEXT NOT NULL,
@@ -237,244 +237,4 @@
             FOREIGN KEY (customer_id) REFERENCES customers(id),
             FOREIGN KEY (account_id) REFERENCES accounts(id)
           )
-[2026-07-24T09:19:21.800Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T09:25:51.571Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T09:25:51.573Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T16:05:21.088Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T16:05:21.100Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T16:20:47.331Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T16:20:47.333Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T16:39:39.614Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T16:39:39.615Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T16:57:39.341Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T16:57:39.342Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T17:23:30.698Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T17:23:30.699Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T17:35:33.151Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T17:35:33.151Z] Sales table migration NOT NEEDED or condition not met.
-[2026-07-24T17:38:34.731Z] Sales Schema: CREATE TABLE sales (
-            id TEXT PRIMARY KEY,
-            company_id TEXT,
-            store_id TEXT NOT NULL,
-            customer_id TEXT,
-            account_id TEXT NOT NULL,
-            invoice_number TEXT,
-            items TEXT NOT NULL,
-            subtotal REAL NOT NULL,
-            discount_amount REAL DEFAULT 0,
-            tax_amount REAL DEFAULT 0,
-            total_amount REAL NOT NULL,
-            original_amount REAL,
-            original_currency TEXT,
-            profit REAL DEFAULT 0,
-            payment_mode TEXT,
-            status TEXT DEFAULT 'completed',
-            type TEXT DEFAULT 'retail',
-            source TEXT DEFAULT 'POS',
-            date TEXT NOT NULL DEFAULT (datetime('now')),
-            device_id TEXT,
-            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-            sync_status INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
-            deleted_at TEXT, quotation_id TEXT,
-            FOREIGN KEY (store_id) REFERENCES stores(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-          )
-[2026-07-24T17:38:34.732Z] Sales table migration NOT NEEDED or condition not met.
+[2026-09-11T12:32:54.939Z] Sales table migration NOT NEEDED or condition not met.

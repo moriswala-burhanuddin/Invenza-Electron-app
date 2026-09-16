@@ -19,7 +19,14 @@ export const createSystemSlice: StoreSlice<SystemState> = (set, get) => ({
     const isDark = theme === 'dark'; // Force light if system (since toggle is hidden)
     document.documentElement.classList.toggle('dark', isDark);
   },
-  completeTour: () => set({ hasCompletedTour: true }),
+  completeTour: () => {
+    set({ hasCompletedTour: true });
+    // Persist per-user so it survives logout/login cycles
+    const user = get().currentUser;
+    if (user?.email) {
+      localStorage.setItem(`invenza_tour_done_${user.email}`, 'true');
+    }
+  },
   toggleTestMode: () => set((state) => ({ testModeEnabled: !state.testModeEnabled })),
 
   addActivityLog: (log: { action: string; details: string }) => {
