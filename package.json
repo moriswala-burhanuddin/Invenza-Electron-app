@@ -1,9 +1,9 @@
 {
-  "name": "invenza-saas-dev",
+  "name": "invenza-erp",
   "private": true,
-  "version": "1.0.30",
+  "version": "1.0.31",
   "type": "module",
-  "description": "Invenza - SaaS Development Sandbox",
+  "description": "Invenza ERP",
   "author": "Invenza Team",
   "main": "electron/main.cjs",
   "scripts": {
@@ -21,8 +21,8 @@
     "dist:publish": "npm run build && electron-builder --publish always"
   },
   "build": {
-    "appId": "com.invenza.saas.dev",
-    "productName": "Invenza SaaS Dev",
+    "appId": "com.invenza.erp",
+    "productName": "Invenza ERP",
     "directories": {
       "output": "release"
     },

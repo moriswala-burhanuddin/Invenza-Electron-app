@@ -198,7 +198,7 @@ export function Sidebar() {
             <div className="flex flex-col">
               <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">Invenza</h1>
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-[10px] font-bold bg-orange-900/50 px-2 py-0.5 rounded-full text-orange-400 border border-orange-800">
+                <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/50 px-2 py-0.5 rounded-full text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
                   {import.meta.env.DEV ? `SaaS DEV ${appVersion}` : appVersion}
                 </span>
                 <button
